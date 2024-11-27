@@ -33,8 +33,8 @@ HoneyBee is a simple web application designed to streamline the creation of **mi
 
 1. Clone the repository:
  ```bash
- git clone https://github.com/yaaras/HoneyBee.git
- cd HoneyBee
+ git clone https://github.com/yaaras/honeybee.git
+ cd honeybee
   ```
 2.	Install the required dependencies:
  ```bash
