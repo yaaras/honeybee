@@ -1,0 +1,330 @@
+{
+  "Database": {
+    "Redis": {
+      "versions": {
+        "5.0": {
+          "misconfigurations": [
+            "No password authentication",
+            "Binding to all interfaces",
+            "Disabled protected mode",
+            "Insufficient access control lists (ACLs)",
+            "Insecure default configurations",
+            "Open ports accessible to the internet",
+            "Lack of TLS/SSL for data in transit",
+            "Misconfigured logging",
+            "Improperly set memory limits",
+            "Unrestricted command execution"
+          ]
+        },
+        "6.0": {
+          "misconfigurations": [
+            "No password authentication",
+            "Binding to all interfaces",
+            "Disabled protected mode",
+            "Insecure ACLs",
+            "No encryption for data in transit",
+            "Open ports accessible to the internet",
+            "Misconfigured persistence settings",
+            "Lack of audit logging",
+            "Improper replication settings",
+            "Inadequate backup strategies"
+          ]
+        },
+        "latest": {
+          "misconfigurations": [
+            "No password authentication",
+            "Binding to all interfaces",
+            "Disabled protected mode",
+            "Insecure ACLs",
+            "No encryption for data in transit",
+            "Misconfigured persistence settings",
+            "Lack of audit logging",
+            "Improper replication settings",
+            "Unrestricted access to sensitive commands",
+            "Poorly configured logging and monitoring"
+          ]
+        }
+      }
+    },
+    "MySQL": {
+      "versions": {
+        "5.7": {
+          "misconfigurations": [
+            "No password for root user",
+            "Binding to all interfaces",
+            "Disabled SSL",
+            "Insecure default configuration",
+            "Misconfigured user privileges",
+            "Lack of audit logging",
+            "Open ports accessible to the internet",
+            "Weak password policies",
+            "Insufficient backup strategies",
+            "Misconfigured data encryption"
+          ]
+        },
+        "8.0": {
+          "misconfigurations": [
+            "No password for root user",
+            "Binding to all interfaces",
+            "Disabled SSL",
+            "Insecure default configuration",
+            "Misconfigured user privileges",
+            "Lack of audit logging",
+            "Open ports accessible to the internet",
+            "Weak password policies",
+            "Insufficient backup strategies",
+            "Misconfigured data encryption"
+          ]
+        },
+        "latest": {
+          "misconfigurations": [
+            "No password for root user",
+            "Binding to all interfaces",
+            "Disabled SSL",
+            "Insecure default configuration",
+            "Misconfigured user privileges",
+            "Lack of audit logging",
+            "Open ports accessible to the internet",
+            "Weak password policies",
+            "Insufficient backup strategies",
+            "Misconfigured data encryption"
+          ]
+        }
+      }
+    },
+    "MongoDB": {
+      "versions": {
+        "4.2": {
+          "misconfigurations": [
+            "No password authentication",
+            "Binding to all interfaces",
+            "No access control",
+            "Disabled TLS/SSL",
+            "Insecure default settings",
+            "Open ports accessible to the internet",
+            "Misconfigured user roles",
+            "Lack of audit logging",
+            "Insufficient backup strategies",
+            "Weak password policies"
+          ]
+        },
+        "4.4": {
+          "misconfigurations": [
+            "No password authentication",
+            "Binding to all interfaces",
+            "No access control",
+            "Disabled TLS/SSL",
+            "Insecure default settings",
+            "Open ports accessible to the internet",
+            "Misconfigured user roles",
+            "Lack of audit logging",
+            "Insufficient backup strategies",
+            "Weak password policies"
+          ]
+        },
+        "latest": {
+          "misconfigurations": [
+            "No password authentication",
+            "Binding to all interfaces",
+            "No access control",
+            "Disabled TLS/SSL",
+            "Insecure default settings",
+            "Open ports accessible to the internet",
+            "Misconfigured user roles",
+            "Lack of audit logging",
+            "Insufficient backup strategies",
+            "Weak password policies"
+          ]
+        }
+      }
+    }
+  },
+  "Orchestration & Management": {
+    "Kubernetes": {
+      "versions": {
+        "1.18": {
+          "misconfigurations": [
+            "Insecure etcd settings",
+            "Lack of RBAC policies",
+            "Default service accounts with privileges",
+            "Open Kubernetes API server",
+            "Disabled network policies",
+            "Unrestricted access to Kubelet",
+            "Misconfigured PodSecurityPolicy",
+            "Insecure admission controllers",
+            "Lack of resource quotas",
+            "No audit logs"
+          ]
+        },
+        "1.19": {
+          "misconfigurations": [
+            "Insecure etcd settings",
+            "Lack of RBAC policies",
+            "Default service accounts with privileges",
+            "Open Kubernetes API server",
+            "Disabled network policies",
+            "Unrestricted access to Kubelet",
+            "Misconfigured PodSecurityPolicy",
+            "Insecure admission controllers",
+            "Lack of resource quotas",
+            "No audit logs"
+          ]
+        },
+        "latest": {
+          "misconfigurations": [
+            "Insecure etcd settings",
+            "Lack of RBAC policies",
+            "Default service accounts with privileges",
+            "Open Kubernetes API server",
+            "Disabled network policies",
+            "Unrestricted access to Kubelet",
+            "Misconfigured PodSecurityPolicy",
+            "Insecure admission controllers",
+            "Lack of resource quotas",
+            "No audit logs"
+          ]
+        }
+      }
+    },
+    "Nomad": {
+      "versions": {
+        "0.9": {
+          "misconfigurations": [
+            "Insecure ACL policies",
+            "No TLS for communication",
+            "Insecure default configurations",
+            "Open ports accessible to the internet",
+            "Lack of audit logging",
+            "Misconfigured access control",
+            "Unrestricted access to APIs",
+            "Improperly set resource quotas",
+            "Weak password policies",
+            "Insecure secret management"
+          ]
+        },
+        "0.10": {
+          "misconfigurations": [
+            "Insecure ACL policies",
+            "No TLS for communication",
+            "Insecure default configurations",
+            "Open ports accessible to the internet",
+            "Lack of audit logging",
+            "Misconfigured access control",
+            "Unrestricted access to APIs",
+            "Improperly set resource quotas",
+            "Weak password policies",
+            "Insecure secret management"
+          ]
+        },
+        "latest": {
+          "misconfigurations": [
+            "Insecure ACL policies",
+            "No TLS for communication",
+            "Insecure default configurations",
+            "Open ports accessible to the internet",
+            "Lack of audit logging",
+            "Misconfigured access control",
+            "Unrestricted access to APIs",
+            "Improperly set resource quotas",
+            "Weak password policies",
+            "Insecure secret management"
+          ]
+        }
+      }
+    }
+  },
+  "CI/CD": {
+    "Jenkins": {
+      "versions": {
+        "2.235": {
+          "misconfigurations": [
+            "No authentication for Jenkins dashboard",
+            "Binding to all interfaces",
+            "Open ports accessible to the internet",
+            "Disabled CSRF protection",
+            "Lack of audit logging",
+            "Insecure plugin management",
+            "Misconfigured job permissions",
+            "Default admin credentials",
+            "Unrestricted script execution",
+            "No backup strategy"
+          ]
+        },
+        "2.249": {
+          "misconfigurations": [
+            "No authentication for Jenkins dashboard",
+            "Binding to all interfaces",
+            "Open ports accessible to the internet",
+            "Disabled CSRF protection",
+            "Lack of audit logging",
+            "Insecure plugin management",
+            "Misconfigured job permissions",
+            "Default admin credentials",
+            "Unrestricted script execution",
+            "No backup strategy"
+          ]
+        },
+        "latest": {
+          "misconfigurations": [
+            "No authentication for Jenkins dashboard",
+            "Binding to all interfaces",
+            "Open ports accessible to the internet",
+            "Disabled CSRF protection",
+            "Lack of audit logging",
+            "Insecure plugin management",
+            "Misconfigured job permissions",
+            "Default admin credentials",
+            "Unrestricted script execution",
+            "No backup strategy"
+          ]
+        }
+      }
+    },
+    "GitLab": {
+      "versions": {
+        "13.0": {
+          "misconfigurations": [
+            "No authentication for GitLab interface",
+            "Binding to all interfaces",
+            "Open ports accessible to the internet",
+            "Disabled CSRF protection",
+            "Lack of audit logging",
+            "Insecure CI/CD configurations",
+            "Misconfigured access control",
+            "Default admin credentials",
+            "Unrestricted job execution",
+            "No backup strategy"
+          ]
+        },
+        "13.5": {
+          "misconfigurations": [
+            "No authentication for GitLab interface",
+            "Binding to all interfaces",
+            "Open ports accessible to the internet",
+            "Disabled CSRF protection",
+            "Lack of audit logging",
+            "Insecure CI/CD configurations",
+            "Misconfigured access control",
+            "Default admin credentials",
+            "Unrestricted job execution",
+            "No backup strategy"
+          ]
+        },
+        "latest": {
+          "misconfigurations": [
+            "No authentication for GitLab interface",
+            "Binding to all interfaces",
+            "Open ports accessible to the internet",
+            "Disabled CSRF protection",
+            "Lack of audit logging",
+            "Insecure CI/CD configurations",
+            "Misconfigured access control",
+            "Default admin credentials",
+            "Unrestricted job execution",
+            "No backup strategy"
+          ]
+        }
+      }
+    }
+  }
+}
