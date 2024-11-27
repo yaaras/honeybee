@@ -1,11 +1,9 @@
 import zipfile
 import streamlit as st
 from openai import OpenAI, AzureOpenAI
-import openai
 import json
 import re
 import os
-import boto3
 
 
 # Initialize OpenAI client
