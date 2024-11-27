@@ -26,7 +26,8 @@ HoneyBee is a simple web application designed to streamline the creation of **mi
 
 ### Prerequisites
 
-- Python 3.10 or above.
+- Python 3.10 or above
+- OpenAI API key 
 
 ### Installation
 
