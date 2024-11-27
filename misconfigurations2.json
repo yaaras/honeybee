@@ -1,0 +1,37 @@
+{
+    "Provisioning": {
+        "Automation & Configuration": {
+            "Airship": {
+                "application_name": "Airship",
+                "versions": {
+                    "1.0": {
+                        "misconfigurations": [
+                            "Leakage of sensitive environment variables",
+                            "Inadequate network policies",
+                            "Insecure storage class configuration"
+                        ]
+                    },
+                    "2.0": {
+                        "misconfigurations": [
+                            "Incorrect RBAC policies",
+                            "Misconfigured TLS certificates",
+                            "Inadequate network policies",
+                            "Absence of POD security policies",
+                            "Leakage of sensitive environment variables"
+                        ]
+                    },
+                    "latest": {
+                        "misconfigurations": [
+                            "Insecure service configurations",
+                            "Misconfigured TLS certificates",
+                            "Incorrect RBAC policies",
+                            "Absence of namespace isolation",
+                            "Inadequate network policies",
+                            "Absence of POD security policies"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
