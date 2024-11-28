@@ -25,12 +25,19 @@ landscape_url = "https://raw.githubusercontent.com/cncf/landscape/master/landsca
 with open('misconfigurations_new.json', 'r') as f:
     misconfig_dict = json.load(f)
 
-
+landscape_data = open('landscape_apps.json').read()
+landscape_data = json.loads(landscape_data)
 
 # Initialize a dictionary to hold the structured data
 structured_output = defaultdict(lambda: defaultdict(list))
 
 for application in tqdm.tqdm(landscape_data, total=len(landscape_data)):
+    category = application['category']
+    app_name = application['name']
+
+    if app_name in misconfig_dict.get(category, {}):
+        print(f"Skipping {app_name} as it already has misconfigurations")
+        continue
 
     system_prompt = open('prompts/list_misconfig.md').read()
     chat_completion = client.chat.completions.create(
@@ -58,8 +65,6 @@ for application in tqdm.tqdm(landscape_data, total=len(landscape_data)):
         misconfigs = []
 
     # Structure the data
-    category = application['category']
-    app_name = application['name']
     structured_output[category][app_name].extend(misconfigs)
 
 # Convert defaultdict to a regular dictionary for saving
