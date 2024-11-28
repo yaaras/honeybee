@@ -28,15 +28,23 @@ with open('misconfigurations_new.json', 'r') as f:
 landscape_data = open('landscape_apps.json').read()
 landscape_data = json.loads(landscape_data)
 
+def add_to_misconfig_dict(category, app_name, misconfigs):
+    if category not in misconfig_dict:
+        misconfig_dict[category] = {}
+    if app_name not in misconfig_dict[category]:
+        misconfig_dict[category][app_name] = []
+    misconfig_dict[category][app_name].extend(misconfigs)
+
+
 # Initialize a dictionary to hold the structured data
-structured_output = defaultdict(lambda: defaultdict(list))
+# structured_output = defaultdict(lambda: defaultdict(list))
 
 for application in tqdm.tqdm(landscape_data, total=len(landscape_data)):
     category = application['category']
     app_name = application['name']
 
     if app_name in misconfig_dict.get(category, {}):
-        print(f"Skipping {app_name} as it already has misconfigurations")
+        # print(f"Skipping {app_name} as it already has misconfigurations")
         continue
 
     system_prompt = open('prompts/list_misconfig.md').read()
@@ -59,20 +67,20 @@ for application in tqdm.tqdm(landscape_data, total=len(landscape_data)):
     print(output_json)
 
     try:
-        misconfigs = json.loads(output_json)['misconfigurations']
+        new_misconfigs = json.loads(output_json)['misconfigurations']
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
-        misconfigs = []
+        new_misconfigs = []
 
     # Structure the data
-    structured_output[category][app_name].extend(misconfigs)
+    add_to_misconfig_dict(category, app_name, new_misconfigs)
 
 # Convert defaultdict to a regular dictionary for saving
-structured_output = {category: dict(apps) for category, apps in structured_output.items()}
+# structured_output = {category: dict(apps) for category, apps in misconfig_dict.items()}
 
 # Save to JSON
 with open('misconfigurations_new.json', 'w') as f:
-    json.dump(structured_output, f, indent=4)
+    json.dump(misconfig_dict, f, indent=4)
 
 
 
