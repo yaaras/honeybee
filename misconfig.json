@@ -55,33 +55,6 @@
             "Directory listing enabled in the web server configuration",
             "Not using HTTPS for secure communication",
             "Incorrect file permissions on Laravel storage and cache directories"
-        ],
-        "Django": [
-            "DEBUG mode enabled in production",
-            "ALLOWED_HOSTS not properly configured",
-            "Sensitive information hardcoded in settings.py",
-            "Secret key exposed or not properly managed",
-            "Improper database configurations (e.g., using SQLite in production)",
-            "No SSL/TLS configuration for HTTPS",
-            "Improper use of CSRF tokens",
-            "Lack of proper authentication and authorization settings",
-            "Using outdated Django version with known vulnerabilities",
-            "Improper CORS settings",
-            "Lack of secure HTTP headers",
-            "Unvalidated input leading to SQL injection or XSS",
-            "Exposed admin interface without additional layer of security"
-        ],
-        "Flask": [
-            "Debug mode enabled in production",
-            "Use of default secret key",
-            "Lack of input validation",
-            "Insecure usage of cookies",
-            "Improper session management",
-            "Unauthorized access to the endpoint",
-            "Lack of exception handling",
-            "Insecure configuration of the web server",
-            "Exposure of stack traces",
-            "Using outdated dependencies"
         ]
     },
     "Messaging Systems": {
@@ -108,18 +81,6 @@
             "Insecure configurations of Kafka Connect and Kafka Streams",
             "Improperly managed Kafka user credentials",
             "Kafka brokers exposing sensitive information due to misconfigured logging levels"
-        ],
-        "RabbitMQ": [
-            "Default credentials (guest/guest) being used",
-            "Management plugin enabled and accessible from external networks",
-            "Inadequate TLS/SSL configuration for data encryption in transit",
-            "Default virtual hosts with wide permissions",
-            "Logging at insufficient levels or to insecure locations",
-            "Improper or inadequate access control policies",
-            "Weak password policies for user accounts",
-            "Insecure or no configuration of user authentication mechanisms",
-            "Lack of monitoring and alerting for unusual activities",
-            "Failing to update RabbitMQ and plugins to the latest versions"
         ]
     },
     "Data Processing": {
@@ -172,6 +133,14 @@
             "Insufficient resource management leading to Denial of Service (DoS) vulnerabilities",
             "Misconfigured Kerberos authentication (e.g., principal keytabs improperly secured)"
         ],
+        "Apache Spark": [
+            "Default security settings are not configured, leading to potential unauthorized access.",
+            "Not enabling authentication for the web UI, exposing administrative interfaces to unauthorized users.",
+            "Improperly configured access controls, allowing non-administrative users to access sensitive data or perform operations.",
+            "Lack of encryption for data in transit, making it susceptible to interception.",
+            "Insufficient logging and monitoring, hindering the ability to detect and respond to security incidents.",
+            "Running Spark with excessive privileges, increasing the impact of a potential exploitation."
+        ],
         "Apache Storm": [
             "Lack of authentication and authorization mechanisms",
             "Insecure communication (no TLS/SSL)",
@@ -183,18 +152,6 @@
             "Insecure deployment settings",
             "Using default ports",
             "Insufficient access controls for Nimbus"
-        ],
-        "Apache Spark": [
-            "Inadequate authentication and authorization mechanisms",
-            "Improperly configured Spark UI access",
-            "Unsecured data at rest and data in transit",
-            "Insufficient isolation between Spark jobs",
-            "Excessive permissions granted to Spark service accounts",
-            "Lack of proper logging and monitoring",
-            "Unrestricted access to the Spark master web UI",
-            "Misconfigured resource allocation leading to DoS vulnerabilities",
-            "Using default configurations without tuning for security",
-            "Insecure communication within Spark clusters"
         ]
     },
     "Web Servers": {
@@ -224,6 +181,14 @@
         ]
     },
     "Databases": {
+        "Redis": [
+            "No password authentication: Redis can be configured without requiring a password, which leaves it vulnerable to unauthorized access if exposed to the internet.",
+            "Binding to all interfaces: By default, Redis binds to all network interfaces, which can inadvertently expose it to external networks if not properly firewalled.",
+            "Disabled protected mode: Redis's protected mode is meant to prevent unauthenticated access by default. Disabling this mode increases the risk of unauthorized access.",
+            "No encryption for data in transit: Redis does not use encryption for data transmission by default, making the data vulnerable to interception during transit.",
+            "Lack of logging and monitoring: Without proper logging and monitoring, it becomes difficult to detect and respond to unauthorized access and other security events.",
+            "Insecure default configuration: Redis comes with a very permissive default configuration, which is not suitable for production environments without significant hardening."
+        ],
         "PostgreSQL": [
             "Default 'postgres' user retained and accessible",
             "Weak password policies or no password set",
@@ -236,62 +201,6 @@
             "Logging not adequately configured to detect anomalies and potential attacks",
             "Non-compliance with the principle of least privilege by granting excessively broad permissions to roles",
             "Missing updates and security patches"
-        ],
-        "Mongo": [
-            "No authentication enabled",
-            "Binding to all network interfaces",
-            "Default port exposure (Port 27017)",
-            "No proper authorization setup (role-based access control)",
-            "No encryption for data at rest",
-            "No encryption for data in transit",
-            "Allowing anonymous access",
-            "Lack of logging and monitoring",
-            "Default credentials usage",
-            "No backup and recovery plans"
-        ],
-        "MySQL": [
-            "Use of default user accounts and passwords",
-            "Lack of data encryption in transit",
-            "Improperly configured user privileges",
-            "No regular backups or backup verification",
-            "Failure to update and patch MySQL instances",
-            "Unrestricted network access to MySQL server",
-            "Inadequate logging and monitoring setup",
-            "Disabled or weak password policies",
-            "Running MySQL with root/admin privileges",
-            "Insecure storage of database credentials",
-            "Improper configuration of replication settings",
-            "Lack of firewall or security group configurations"
-        ],
-        "Redis": [
-            "No password authentication: Redis can be deployed without requiring a password, which can lead to unauthorized access.",
-            "Binding to all interfaces: Redis by default is bound to all network interfaces, which can expose it to external threats.",
-            "Disabled protected mode: Redis protected mode should be enabled to prevent unauthorized access from external networks.",
-            "No encryption for data in transit: Redis does not provide encryption for data in transit by default, making it susceptible to man-in-the-middle attacks.",
-            "Lack of logging and monitoring: Insufficient logging and monitoring can delay the detection of security incidents and issues.",
-            "Insecure configuration file permissions: Configuration files with improper permissions might allow unauthorized users to alter Redis configurations."
-        ]
-    },
-    "Monitoring Tools": {
-        "Prometheus": [
-            "Missing authentication and authorization on Prometheus web UI",
-            "Exposing Prometheus metrics endpoint to the public without restrictions",
-            "Insecure configurations of alert manager without TLS",
-            "No encryption for data in transit",
-            "Insufficiently protected targets exposing sensitive data",
-            "Default configuration credentials and tokens in plaintext"
-        ],
-        "Grafana": [
-            "Default admin username and password",
-            "Insufficient permissions for users and roles",
-            "Access to dashboards without authentication",
-            "No use of HTTPS for web access",
-            "Inadequate data source access controls",
-            "Verbose logging enabled in production",
-            "Lack of monitoring for unauthorized access",
-            "Exposed sensitive API endpoints",
-            "No rate limiting on APIs",
-            "Using outdated or vulnerable plugins"
         ]
     }
 }
