@@ -77,13 +77,6 @@ if category:
     if application:
         misconfigurations = misconfigurations_data[category][application]
         selected_misconfigurations = m3.multiselect("Choose misconfigurations:", misconfigurations)
-        # versions = list(misconfigurations_data[category][application]['versions'].keys())
-        # version = m3.selectbox("Choose a version:", versions)
-        #
-        # if version:
-        #     misconfigurations = misconfigurations_data[category][application]['versions'][version]['misconfigurations']
-        #     selected_misconfigurations = m4.multiselect("Choose misconfigurations:", misconfigurations)
-
 
 with tab1:
     if category and application and st.button("Generate Dockerfile"):
