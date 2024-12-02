@@ -30,7 +30,7 @@ EXAMPLE:
 
 // Format the output in JSON
 
-- Organize the information into a JSON structure that clearly associates each application with its respective misconfigurations.
+- Organize the information into a JSON structure.
 
 # OUTPUT
 
@@ -42,7 +42,7 @@ EXAMPLE:
 
 // Examples to follow
 
-- Comprehensive and detailed list of misconfigurations.
+- Comprehensive of misconfigurations.
 
 - Clear and well-organized JSON structure.
 
@@ -50,7 +50,7 @@ EXAMPLE:
 
 // Examples to avoid
 
-- Incomplete or generic misconfigurations
+- Incomplete misconfigurations
 
 - Unstructured or poorly formatted JSON output.
 

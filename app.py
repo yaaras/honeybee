@@ -60,26 +60,39 @@ def create_files_from_json(root_dir, json_data):
 
     return files
 
-m1, m2, m3 = st.columns([1,1,2])
+
+m1, m2, m3, m4 = st.columns([1,1,2,1])
+custom_mode = m4.checkbox("Custom")
 tab1, tab2, tab3 = st.tabs(["Dockerfile", "Nuclei", "Oval"])
 
 
 with open('misconfigurations_new.json') as f:
     misconfigurations_data = json.loads(f.read())
 
-categories = list(misconfigurations_data.keys())
-category = m1.selectbox("Choose a category:", categories)
 
-if category:
-    applications = list(misconfigurations_data[category].keys())
-    application = m2.selectbox("Choose an application:", applications)
+if not custom_mode:
+    # Standard mode with selectbox and multiselect
+    categories = list(misconfigurations_data.keys())
+    category = m1.selectbox("Choose a category:", categories)
 
-    if application:
-        misconfigurations = misconfigurations_data[category][application]
-        selected_misconfigurations = m3.multiselect("Choose misconfigurations:", misconfigurations)
+    if category:
+        applications = list(misconfigurations_data[category].keys())
+        application = m2.selectbox("Choose an application:", applications)
+
+        if application:
+            misconfigurations = misconfigurations_data[category][application]
+            selected_misconfigurations = m3.multiselect("Choose misconfigurations:", misconfigurations)
+
+# custom mode with text inputs
+else:
+    application = m1.text_input("Enter application name:")
+    misconfiguration = m2.text_input("Enter Misconfiguration:")
+
+    selected_misconfigurations = [misconfiguration.strip()] if misconfiguration.strip() else []
+
 
 with tab1:
-    if category and application and st.button("Generate Dockerfile"):
+    if application and st.button("Generate Dockerfile"):
         system_prompt = open('prompts/generate_dockerfile.md').read()
         user_prompt = (
             f"Generate a Dockerfile for {application} with the following misconfigurations: "
@@ -196,7 +209,7 @@ with tab1:
 #         st.download_button(f"Download {zip_filename}", data=data, file_name=zip_filename, on_click=None)
 
 with tab2:
-    if category and application and st.button("Generate Nuclei"):
+    if application and st.button("Generate Nuclei"):
         system_prompt = open('prompts/write_nuclei_rule.md').read()
         user_prompt = (f"Generate a Nuclei template for {application} with the following misconfigurations: "
                        f"{', '.join(selected_misconfigurations)}. Return the template as JSON.")
@@ -221,7 +234,7 @@ with tab2:
         st.write(st.session_state["nuclei_content"])
 
 with tab3:
-    if category and application and st.button("Generate Oval"):
+    if application and st.button("Generate Oval"):
         system_prompt = open('prompts/write_oval_rule.md').read()
         user_prompt = (
             f"Generate an Oval template for {application} with the following misconfigurations: "
