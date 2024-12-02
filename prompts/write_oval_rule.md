@@ -20,75 +20,9 @@ As OVALRuleGenBot, your main task is to generate OVAL rules to detect specific c
 
 Sample Misconfiguration and Expected Output
 
-**Example 1: Detect if Docker API is configured to allow unrestricted access**
+**Example 1: Detect if Jupyter Notebook allows remote unauthenticated access**
 ```xml
-<definition xmlns="https://oval.mitre.org/XMLSchema/oval-definitions-5">
-  <metadata>
-    <title>Insecure Docker API Access Configuration Detection</title>
-    <description>Detects if Docker service is configured to allow unrestricted access via 0.0.0.0.</description>
-    <affected family="unix">
-      <platform>Ubuntu</platform>
-    </affected>
-    <class>vulnerability</class>
-  </metadata>
-  <criteria operator="and" negate="true">
-    <criterion>
-      <textfilecontent54_test check_existence="at_least_one_exists" check="all" comment="Ensure Docker API is not remotely accessible">
-        <textfilecontent54_object>
-          <filepath operation="pattern match">.*/lib/systemd/system/docker.service</filepath>
-          <pattern operation="pattern match">^ExecStart.*\-H\s+tcp\:\/\/0\.0\.0\.0\:[0-9]+\s+</pattern>
-          <instance datatype="int">1</instance>
-        </textfilecontent54_object>
-      </textfilecontent54_test>
-    </criterion>
-  </criteria>
-</definition>
-```
-
-**Example 2: Detect if Jenkins allows unrestricted script execution**
-```xml
-<definition xmlns="https://oval.mitre.org/XMLSchema/oval-definitions-5">
-  <metadata>
-    <title>Unrestricted Script Execution in Jenkins Configuration Detection</title>
-    <description>Detects if Jenkins is configured to allow unrestricted script execution, which can be a security risk.</description>
-    <affected family="unix">
-      <platform>Ubuntu</platform>
-    </affected>
-    <class>vulnerability</class>
-  </metadata>
-  <criteria operator="and" negate="true">
-    <criterion>
-      <textfilecontent54_test check_existence="at_least_one_exists" check="all" comment="Check if the 'scriptSecurity.enabled' element is set to 'false' or not present">
-        <textfilecontent54_object>
-          <filepath operation="pattern match">.*/jenkins/config.xml</filepath>
-          <pattern operation="pattern match">\s*&lt;scriptSecurity&gt;\s*&lt;enabled&gt;false&lt;/enabled&gt;\s*&lt;/scriptSecurity&gt;</pattern>
-          <instance datatype="int">1</instance>
-        </textfilecontent54_object>
-      </textfilecontent54_test>
-    </criterion>
-    <criterion>
-      <textfilecontent54_test check_existence="at_least_one_exists" check="all" comment="Check if the 'groovy.sandbox' element is set to 'false' or not present">
-        <textfilecontent54_object>
-          <filepath operation="pattern match">.*/jenkins/config.xml</filepath>
-          <pattern operation="pattern match">\s*&lt;groovy&gt;\s*&lt;sandbox&gt;false&lt;/sandbox&gt;\s*&lt;/groovy&gt;</pattern>
-          <instance datatype="int">1</instance>
-        </textfilecontent54_object>
-      </textfilecontent54_test>
-    </criterion>
-  </criteria>
-</definition>
-```
-**Example 3: Detect if Jupyter Notebook allows unauthenticated access**
-```xml
-<definition xmlns="https://oval.mitre.org/XMLSchema/oval-definitions-5">
-  <metadata>
-    <title>Unauthenticated Jupyter Notebook Access Detection</title>
-    <description>Detects if Jupyter Notebook allows remote unauthenticated access, which poses a security risk.</description>
-    <affected family="unix">
-      <platform>Ubuntu</platform>
-    </affected>
-    <class>vulnerability</class>
-  </metadata>
+<definition xmlns="https://wiz.io/XMLSchema/direct-schema">
   <criteria operator="and" negate="true">
     <criterion>
       <textfilecontent54_test check_existence="at_least_one_exists" check="all" comment="Check if the 'c.NotebookApp.token' variable is not set to an empty value">
@@ -119,4 +53,95 @@ Sample Misconfiguration and Expected Output
     </criterion>
   </criteria>
 </definition>
+
 ```
+
+**Example 2: Detect if Redis allows remote unauthenticated access n**
+```xml
+<definition xmlns="https://wiz.io/XMLSchema/direct-schema">
+	<criteria operator="AND" negate="true">
+	
+	  <criteria operator="OR">
+	  
+		<criteria operator="AND" comment="Ensure requirepass is not empty unless ignored">
+			<criterion>
+				<textfilecontent54_test check_existence="at_least_one_exists" check="all" comment="Check if the 'requirepass' variable is set with an empty password">
+				  <textfilecontent54_object>
+					<filepath operation="pattern match">.*redis.conf</filepath>
+					<pattern operation="pattern match">^requirepass.*\"\s*\"</pattern>
+					<instance datatype="int">1</instance>
+				  </textfilecontent54_object>
+				</textfilecontent54_test>
+			</criterion>
+			<criterion negate="true">
+				<textfilecontent54_test check_existence="at_least_one_exists" check="all" comment="Check if the 'aclfile' setting overrides requirepass">
+				  <textfilecontent54_object>
+					<filepath operation="pattern match">.*redis.conf</filepath>
+					<pattern operation="pattern match">^aclfile.*</pattern>
+					<instance datatype="int">1</instance>
+				  </textfilecontent54_object>
+				</textfilecontent54_test>
+			</criterion>
+		  	<criterion negate="true">
+				<textfilecontent54_test check_existence="at_least_one_exists" check="all" comment="Check if the acl 'user' setting overrides requirepass">
+				  <textfilecontent54_object>
+					<filepath operation="pattern match">.*redis.conf</filepath>
+					<pattern operation="pattern match">^user.*</pattern>
+					<instance datatype="int">1</instance>
+				  </textfilecontent54_object>
+				</textfilecontent54_test>
+			</criterion>
+		</criteria>
+		
+		<criteria operator="AND" comment="Check if there is an acl that sets a 'user' with 'nopass'">
+			<criterion>
+				<textfilecontent54_test check_existence="at_least_one_exists" check="all">
+				  <textfilecontent54_object>
+					<filepath operation="pattern match">.*redis.conf</filepath>
+					<pattern operation="pattern match">^user.*nopass.*</pattern>
+					<instance datatype="int">1</instance>
+				  </textfilecontent54_object>
+				</textfilecontent54_test>
+			</criterion>
+		</criteria>
+		
+	  </criteria>
+	  
+	  <criteria operator="AND" comment="Ensure protected mode is not disabled if bind is set to all interfaces">
+	  
+		<criteria operator="OR" comment="Ensure bind is not set to all interfaces">
+			<criterion negate="true">
+			  <textfilecontent54_test check_existence="at_least_one_exists" check="all" comment="Ensure the 'bind' definition is set">
+				<textfilecontent54_object>
+				  <filepath operation="pattern match">.*redis.conf</filepath>
+				  <pattern operation="pattern match">^bind.*</pattern>
+				  <instance datatype="int">1</instance>
+				</textfilecontent54_object>
+			  </textfilecontent54_test>
+			</criterion>
+			<criterion>
+			  <textfilecontent54_test check_existence="at_least_one_exists" check="all" comment="Ensure the 'bind' definition is not set to  '0.0.0.0' or  '*'">
+				<textfilecontent54_object>
+				  <filepath operation="pattern match">.*redis.conf</filepath>
+				  <pattern operation="pattern match">^bind\s*(0\.0\.0\.0|\*).*</pattern>
+				  <instance datatype="int">1</instance>
+				</textfilecontent54_object>
+			  </textfilecontent54_test>
+			</criterion>
+		</criteria>
+		
+		<criteria operator="AND" comment="Ensure the 'protected-mode' variable is not set to 'no'">
+			<criterion>
+			  <textfilecontent54_test check_existence="at_least_one_exists" check="all">
+				<textfilecontent54_object>
+				  <filepath operation="pattern match">.*redis.conf</filepath>
+				  <pattern operation="pattern match">^protected-mode\s\s*no.*</pattern>
+				  <instance datatype="int">1</instance>
+				</textfilecontent54_object>
+			  </textfilecontent54_test>
+			</criterion>
+		</criteria>
+	  </criteria>
+	  
+	</criteria>
+</definition>

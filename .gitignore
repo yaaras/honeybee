@@ -1,3 +1,6 @@
 out/
 *.zip
 *.ipynb
+Jenkins/
+Jupyter notebook/
+Redis/
