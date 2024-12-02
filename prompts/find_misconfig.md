@@ -26,7 +26,7 @@ EXAMPLE:
 
 // List misconfigurations per version of the application
 
-- Create a detailed list of misconfigurations for each version of [APPLICATION_NAME].
+- Create a detailed list of misconfigurations for each version of [APPLICATION_NAME], highlighting any version-specific issues.
 
 // Format the output in JSON
 

@@ -264,12 +264,17 @@
             "Lack of firewall or security group configurations"
         ],
         "Redis": [
-            "No password authentication: Redis can be deployed without requiring a password, which can lead to unauthorized access.",
-            "Binding to all interfaces: Redis by default is bound to all network interfaces, which can expose it to external threats.",
-            "Disabled protected mode: Redis protected mode should be enabled to prevent unauthorized access from external networks.",
-            "No encryption for data in transit: Redis does not provide encryption for data in transit by default, making it susceptible to man-in-the-middle attacks.",
-            "Lack of logging and monitoring: Insufficient logging and monitoring can delay the detection of security incidents and issues.",
-            "Insecure configuration file permissions: Configuration files with improper permissions might allow unauthorized users to alter Redis configurations."
+            "No password authentication",
+            "Binding to all interfaces",
+            "Disabled protected mode",
+            "No encryption for data in transit",
+            "Lack of logging and monitoring",
+            "Default Configurations Not Reviewed",
+            "Insecure Redis CLI Access",
+            "Exposure of Sensitive Data in Logs",
+            "Not Using TLS/SSL",
+            "Unrestricted Client Connections",
+            "Uncontrolled Job Execution"
         ]
     },
     "Monitoring Tools": {
