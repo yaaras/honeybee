@@ -22,7 +22,7 @@ st.set_page_config(
 )
 
 st.title("🐝 HoneyBee")
-st.subheader("Misconfiguration Simulator & Detector")
+st.subheader("Misconfigured App Simulator & Detector")
 # Simulate, Misconfigure, Detect
 
 application, dockerfile, nuclei = None, None, None
@@ -61,10 +61,21 @@ def create_files_from_json(root_dir, json_data):
     return files
 
 
-m1, m2, m3, m4 = st.columns([1,1,2,1])
-custom_mode = m4.checkbox("Custom")
-tab1, tab2, tab3 = st.tabs(["Dockerfile", "Nuclei", "Oval"])
+# placeholder for columns
+placeholder = st.empty()
 
+# Define the initial columns
+with placeholder.container():
+    m1, m2, m3 = st.columns([1, 1, 2])
+    custom_mode = st.toggle("Custom")
+
+# Overwrite columns when custom_mode is toggled
+if custom_mode:
+    with placeholder.container():
+        m1, m2, m3 = st.columns([1, 3, 1])
+
+# Add tabs
+dockerfile_tab, nuclei_tab, oval_tab = st.tabs(["Dockerfile", "Nuclei", "Oval"])
 
 with open('misconfigurations_new.json') as f:
     misconfigurations_data = json.loads(f.read())
@@ -91,7 +102,7 @@ else:
     selected_misconfigurations = [misconfiguration.strip()] if misconfiguration.strip() else []
 
 
-with tab1:
+with dockerfile_tab:
     if application and st.button("Generate Dockerfile"):
         system_prompt = open('prompts/generate_dockerfile.md').read()
         user_prompt = (
@@ -99,25 +110,27 @@ with tab1:
             f"{', '.join(selected_misconfigurations)}."
             f" Provide the output as a JSON object with 'file_name', 'file_path', and 'file_content' keys for each file."
         )
-
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": user_prompt,
-                }
-            ],
-            model="gpt-4o-barak",
+        with st.spinner("Generating Dockerfile..."):
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system_prompt,
+                    },
+                    {
+                        "role": "user",
+                        "content": user_prompt,
+                    }
+                ],
+                model="gpt-4o-barak",
         )
-        api_response = chat_completion.choices[0].message.content
-        json_text = re.search(r'```json(.*?)```$', api_response, re.DOTALL).group(1)
-        dockerfile = json.loads(json_text)
-        st.session_state["dockerfile_generated"] = True
-        st.session_state["dockerfile_content"] = dockerfile
+
+            api_response = chat_completion.choices[0].message.content
+            json_text = re.search(r'```json(.*?)```$', api_response, re.DOTALL).group(1)
+            dockerfile = json.loads(json_text)
+            st.session_state["dockerfile_generated"] = True
+            st.session_state["dockerfile_content"] = dockerfile
+            st.success("Dockerfile generated successfully!")
 
     if st.session_state["dockerfile_generated"]:
         # st.json(st.session_state["dockerfile_content"])
@@ -131,24 +144,32 @@ with tab1:
                 col2.caption(f"{item['file_name']}")
                 col2.markdown(item["file_content"])
 
+        ogal_code = '''# Install libxml2 to support ogal execution
+RUN apt-get update && apt-get install -y libxml2 && rm -rf /var/lib/apt/lists/*
 
+# Copy the ogal file to the container and make it executable
+COPY ogal /usr/local/bin/ogal
+RUN chmod +x /usr/local/bin/ogal'''
+        col1.caption(f"add these lines to dockerfile to support ogal execution")
+        col1.code(ogal_code, language="docker")
         # Use the first misconfiguration to help name the folder
-        misconfig = selected_misconfigurations[0].replace(' ', '_').lower()
-        folder_name = f"{application}_{misconfig}"
+        if selected_misconfigurations:
+            misconfig = selected_misconfigurations[0].replace(' ', '_').lower()
+            folder_name = f"{application}_{misconfig}"
 
-        # Generate files based on GPT's Dockerfile JSON output
-        files = create_files_from_json(application, st.session_state["dockerfile_content"])
+            # Generate files based on GPT's Dockerfile JSON output
+            files = create_files_from_json(application, st.session_state["dockerfile_content"])
 
-        # Zip and download the generated files
-        zip_filename = f"{folder_name}.zip"
-        with open(zip_filename, "wb") as file:
-            with zipfile.ZipFile(file, "w") as zip_file:
-                for file_path in files:
-                    zip_file.write(file_path)
+            # Zip and download the generated files
+            zip_filename = f"{folder_name}.zip"
+            with open(zip_filename, "wb") as file:
+                with zipfile.ZipFile(file, "w") as zip_file:
+                    for file_path in files:
+                        zip_file.write(file_path)
 
-        # Provide download button for the zip file
-        data = open(zip_filename, "rb").read()
-        st.download_button(f"Download {zip_filename}", data=data, file_name=zip_filename, on_click=None)
+            # Provide download button for the zip file
+            data = open(zip_filename, "rb").read()
+            st.download_button(f"Download {zip_filename}", data=data, file_name=zip_filename, on_click=None)
 
 # with tab2:
 #     if category and application and st.button("Generate Docker Compose"):
@@ -208,53 +229,58 @@ with tab1:
 #         data = open(zip_filename, "rb").read()
 #         st.download_button(f"Download {zip_filename}", data=data, file_name=zip_filename, on_click=None)
 
-with tab2:
+with nuclei_tab:
     if application and st.button("Generate Nuclei"):
         system_prompt = open('prompts/write_nuclei_rule.md').read()
         user_prompt = (f"Generate a Nuclei template for {application} with the following misconfigurations: "
                        f"{', '.join(selected_misconfigurations)}. Return the template as JSON.")
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": user_prompt
-                }
-            ],
-            model="gpt-4o-barak",
-        )
-        nuclei = chat_completion.choices[0].message.content
-        st.session_state["nuclei_generated"] = True
-        st.session_state["nuclei_content"] = nuclei
+        with st.spinner("Generating Nuclei..."):
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system_prompt,
+                    },
+                    {
+                        "role": "user",
+                        "content": user_prompt
+                    }
+                ],
+                model="gpt-4o-barak",
+            )
+            nuclei = chat_completion.choices[0].message.content
+            st.session_state["nuclei_generated"] = True
+            st.session_state["nuclei_content"] = nuclei
+            st.success("Nuclei generated successfully!")
 
     if st.session_state["nuclei_generated"]:
         st.write(st.session_state["nuclei_content"])
 
-with tab3:
+
+with oval_tab:
     if application and st.button("Generate Oval"):
         system_prompt = open('prompts/write_oval_rule.md').read()
         user_prompt = (
             f"Generate an Oval template for {application} with the following misconfigurations: "
             f"{', '.join(selected_misconfigurations)}.")
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": user_prompt
-                }
-            ],
-            model="gpt-4o-barak",
-        )
-        oval = chat_completion.choices[0].message.content
-        st.session_state["oval_generated"] = True
-        st.session_state["oval_content"] = oval
+        with st.spinner("Generating Oval..."):
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system_prompt,
+                    },
+                    {
+                        "role": "user",
+                        "content": user_prompt
+                    }
+                ],
+                model="gpt-4o-barak",
+            )
+            oval = chat_completion.choices[0].message.content
+            st.session_state["oval_generated"] = True
+            st.session_state["oval_content"] = oval
+            st.success("Oval generated successfully!")
 
     if st.session_state["oval_generated"]:
         st.write(st.session_state["oval_content"])
