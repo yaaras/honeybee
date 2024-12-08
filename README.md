@@ -1,6 +1,22 @@
 # HoneyBee: Misconfigured App Generator
 
-HoneyBee is a simple web application designed to streamline the creation of **misconfigured applications** for testing and educational purposes. Using Docker, HoneyBee allows you to select an application and a misconfiguration from a curated list of well-known vulnerabilities. With the power of GPT, the tool generates a Dockerfile that recreates the chosen misconfiguration. Additionally, HoneyBee provides templates for **Nuclei** and **OVAL** to help detect and manage the misconfiguration.
+
+HoneyBee is a tool for creating misconfigured environments to test vulnerabilities in technologies like Jenkins, Jupyter Notebook, and more. 
+
+With the help of LLMs, HoneyBee generates:
+- **Dockerfiles** to replicate misconfigured applications.
+- **Nuclei templates** to detect vulnerabilities.
+- **OVAL rules** for detection Host Misconfigurations.
+
+## How It Works
+- Choose a technology and a misconfiguration from a curated list of known issues, or write your own.
+- HoneyBee uses AI to generate the required files.
+
+![HoneyBee](
+images/honeybee_screenshot.png)
+
+## Try It Out
+The app is live and running! Access HoneyBee at [http://16.170.7.44:8501](http://16.170.7.44:8501).
 
 ## Key Features
 
@@ -12,15 +28,6 @@ HoneyBee is a simple web application designed to streamline the creation of **mi
 - **Detection Template Generator**:
   - Generate **Nuclei templates** to detect the created misconfiguration.
   - Generate **OVAL templates** for compliance and security testing.
-
-- **Powered by GPT**:
-  - Utilize GPT to craft accurate Dockerfile configurations and detection templates.
-
-## Use Cases
-
-- **Security Education**: Learn how misconfigurations arise and how to detect them.
-- **Penetration Testing Practice**: Set up intentionally misconfigured environments for testing.
-- **Tool Development**: Validate the effectiveness of security tools by running them against known misconfigurations.
 
 ## Getting Started
 
