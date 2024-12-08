@@ -13,7 +13,7 @@ With the help of LLMs, HoneyBee generates:
 - HoneyBee uses AI to generate the required files.
 
 ![HoneyBee](
-images/honeybee_screenshot.png)
+images/Honeybee_screenshot.png)
 
 ## Try It Out
 The app is live and running! Access HoneyBee at [http://16.170.7.44:8501](http://16.170.7.44:8501).
