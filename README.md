@@ -16,7 +16,7 @@ With the help of LLMs, HoneyBee generates:
 images/Honeybee_screenshot.png)
 
 ## Try It Out
-The app is live and running! Access HoneyBee at [http://16.170.7.44:8501](http://16.170.7.44:8501).
+The app is live and running! Access HoneyBee at [http://16.170.7.44:8501](http://16.170.7.44:8501) (using Twingate VPN.
 
 ## Key Features
 
