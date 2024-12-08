@@ -144,21 +144,33 @@ with dockerfile_tab:
                 col2.caption(f"{item['file_name']}")
                 col2.markdown(item["file_content"])
 
+        col1.subheader("Optional: Add support for Ogal execution")
         ogal_code = '''# Install libxml2 to support ogal execution
 RUN apt-get update && apt-get install -y libxml2 && rm -rf /var/lib/apt/lists/*
 
 # Copy the ogal file to the container and make it executable
 COPY ogal /usr/local/bin/ogal
 RUN chmod +x /usr/local/bin/ogal'''
-        col1.caption(f"add these lines to dockerfile to support ogal execution")
+        col1.caption(f"add these lines to dockerfile to support ogal execution in ubuntu")
         col1.code(ogal_code, language="docker")
+        ogal2_code = '''# Run the ogal command to execute the oval file
+        # Install libxml2 to support ogal execution
+RUN apk add --no-cache libxml2
+
+# Copy the ogal file to the container and make it executable
+COPY ogal /usr/local/bin/ogal
+RUN chmod +x /usr/local/bin/ogal'''
+        col1.caption(f"add these lines to dockerfile to support ogal execution in alpine")
+        col1.code(ogal2_code, language="docker")
+
         # Use the first misconfiguration to help name the folder
         if selected_misconfigurations:
             misconfig = selected_misconfigurations[0].replace(' ', '_').lower()
             folder_name = f"{application}_{misconfig}"
+            root_dir = f"out/{application}"
 
             # Generate files based on GPT's Dockerfile JSON output
-            files = create_files_from_json(application, st.session_state["dockerfile_content"])
+            files = create_files_from_json(root_dir, st.session_state["dockerfile_content"])
 
             # Zip and download the generated files
             zip_filename = f"{folder_name}.zip"

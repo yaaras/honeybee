@@ -2,6 +2,7 @@ out/
 *.zip
 *.ipynb
 Jenkins/
-Jupyter notebook/
+out/Jupyter notebook/
 Redis/
-Apache Tomcat/
+out/Apache Tomcat/
+out/Kibana/
