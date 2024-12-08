@@ -75,7 +75,7 @@ if custom_mode:
         m1, m2, m3 = st.columns([1, 3, 1])
 
 # Add tabs
-dockerfile_tab, nuclei_tab, oval_tab = st.tabs(["Dockerfile", "Nuclei", "Oval"])
+dockerfile_tab, dockercompose_tab, nuclei_tab, oval_tab = st.tabs(["Dockerfile", "Docker Compose", "Nuclei", "Oval"])
 
 with open('misconfigurations_new.json') as f:
     misconfigurations_data = json.loads(f.read())
@@ -183,63 +183,40 @@ RUN chmod +x /usr/local/bin/ogal'''
             data = open(zip_filename, "rb").read()
             st.download_button(f"Download {zip_filename}", data=data, file_name=zip_filename, on_click=None)
 
-# with tab2:
-#     if category and application and st.button("Generate Docker Compose"):
-#         system_prompt = open('prompts/generate_dockercompose.md').read()
-#         user_prompt = (
-#             f"Generate a Docker Compose for {application} with the following misconfigurations: "
-#             f"{', '.join(selected_misconfigurations)}."
-#             f" Provide the output as a JSON object with 'file_name', 'file_path', and 'file_content' keys for each file."
-#         )
-#
-#         chat_completion = client.chat.completions.create(
-#             messages=[
-#                 {
-#                     "role": "system",
-#                     "content": system_prompt,
-#                 },
-#                 {
-#                     "role": "user",
-#                     "content": user_prompt,
-#                 }
-#             ],
-#             model="gpt-4o-barak",
-#         )
-#         api_response = chat_completion.choices[0].message.content
-#         json_text = re.search(r'```json(.*?)```$', api_response, re.DOTALL).group(1)
-#         dockercompose = json.loads(json_text)
-#         st.session_state["dockercompose_generated"] = True
-#         st.session_state["dockercompose_content"] = dockercompose
-#
-#     if st.session_state["dockercompose_generated"]:
-#         files_json = st.session_state["dockercompose_content"]
-#         col1, col2 = st.columns(2)
-#         for item in files_json:
-#             if item["file_type"] != "markdown":
-#                 col1.caption(f"{item['file_path']}/{item['file_name']}")
-#                 col1.code(item["file_content"], language="docker")
-#             else:
-#                 col2.caption(f"{item['file_name']}")
-#                 col2.markdown(item["file_content"])
-#
-#
-#         # Use the first misconfiguration to help name the folder
-#         misconfig = selected_misconfigurations[0].replace(' ', '_').lower()
-#         folder_name = f"{application}_{misconfig}"
-#
-#         # Generate files based on GPT's Dockerfile JSON output
-#         files = create_files_from_json(application, st.session_state["dockercompose_content"])
-#
-#         # Zip and download the generated files
-#         zip_filename = f"{folder_name}.zip"
-#         with open(zip_filename, "wb") as file:
-#             with zipfile.ZipFile(file, "w") as zip_file:
-#                 for file_path in files:
-#                     zip_file.write(file_path)
-#
-#         # Provide download button for the zip file
-#         data = open(zip_filename, "rb").read()
-#         st.download_button(f"Download {zip_filename}", data=data, file_name=zip_filename, on_click=None)
+with dockercompose_tab:
+    if application and st.button("Generate Docker Compose"):
+        system_prompt = open('prompts/generate_dockercompose.md').read()
+        user_prompt = (
+            f"Generate a Docker Compose for {application} with the following misconfigurations: "
+            f"{', '.join(selected_misconfigurations)}. "
+            f"Provide the output as a JSON object with 'file_name', 'file_path', and 'file_content' keys for each file."
+        )
+        with st.spinner("Generating Docker Compose..."):
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                model="gpt-4o-barak",
+            )
+
+            api_response = chat_completion.choices[0].message.content
+            json_text = re.search(r'```json(.*?)```$', api_response, re.DOTALL).group(1)
+            dockercompose = json.loads(json_text)
+            st.session_state["dockercompose_generated"] = True
+            st.session_state["dockercompose_content"] = dockercompose
+            st.success("Docker Compose generated successfully!")
+
+    if st.session_state.get("dockercompose_generated"):
+        files_json = st.session_state["dockercompose_content"]
+        col1, col2 = st.columns(2)
+        for item in files_json:
+            if item["file_type"] != "markdown":
+                col1.caption(f"{item['file_path']}/{item['file_name']}")
+                col1.code(item["file_content"], language="yaml")
+            else:
+                col2.caption(f"{item['file_name']}")
+                col2.markdown(item["file_content"])
 
 with nuclei_tab:
     if application and st.button("Generate Nuclei"):
