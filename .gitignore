@@ -6,3 +6,6 @@ out/Jupyter notebook/
 Redis/
 out/Apache Tomcat/
 out/Kibana/
+generate_misconfig.py
+landscape.yml
+misconfigurations.json
