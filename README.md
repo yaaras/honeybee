@@ -6,29 +6,23 @@ HoneyBee is a tool for creating misconfigured environments to test vulnerabiliti
 With the help of LLMs, HoneyBee generates:
 - **Dockerfiles** to replicate misconfigured applications.
 - **Nuclei templates** to detect vulnerabilities.
-- **OVAL rules** for detection Host Misconfigurations.
 
 ## How It Works
 - Choose a technology and a misconfiguration from a curated list of known issues, or write your own.
-- HoneyBee uses AI to generate the required files.
+- HoneyBee uses LLMs to generate the required files and instructions to use them.
 
 ![HoneyBee](
 images/Honeybee_screenshot.png)
-
-## Try It Out
-The app is live and runnin
-g! Access HoneyBee at https://wiz-honeybee.com (using Twingate VPN)
 
 ## Key Features
 
 - **Misconfiguration Generator**:
   - Choose from a list of commonly misconfigured apps (e.g., Jenkins, Jupyter Lab).
   - Select a well-known misconfiguration (e.g., weak authentication, improper access control).
-  - Automatically generate Dockerfiles tailored to your selections.
+  - Automatically generate Dockerfiles and Docker-compose files tailored to your selections.
 
 - **Detection Template Generator**:
   - Generate **Nuclei templates** to detect the created misconfiguration.
-  - Generate **OVAL templates** for compliance and security testing.
 
 ## Getting Started
 
@@ -40,18 +34,30 @@ g! Access HoneyBee at https://wiz-honeybee.com (using Twingate VPN)
 ### Installation
 
 1. Clone the repository:
- ```bash
- git clone https://github.com/yaaras/honeybee.git
- cd honeybee
-  ```
+   ```bash
+   git clone https://github.com/yaaras/honeybee.git
+   cd honeybee
+    ```
 2.	Install the required dependencies:
- ```bash
- pip install -r requirements.txt
- ```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-3.	Run the application:
- ```bash
-  streamlit run app.py
- ```
+3. Set up your OpenAI API key:
 
-4.	Open your browser and navigate to the URL provided by Streamlit (typically http://localhost:8501).
+    For OpenAI:
+    ```bash
+    export OPENAI_API_KEY=your_openai_api_key
+    ```
+    
+    For Azure OpenAI:
+    ```bash
+    export AZURE_OPENAI_API_KEY=your_azure_api_key
+    export AZURE_OPENAI_ENDPOINT=your_azure_endpoint
+    ```
+
+### Usage
+   ```bash
+    streamlit run app.py
+   ```
+Open your browser and navigate to the URL provided by Streamlit (typically http://localhost:8501).
