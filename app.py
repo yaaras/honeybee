@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-st.title("🐝 Honey:orange[Bee]")
+st.title("🐝 :orange[HoneyBee]")
 st.subheader("Misconfigured App Simulator & Detector")
 
 # Get LLM settings from the sidebar
