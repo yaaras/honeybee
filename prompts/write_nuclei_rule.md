@@ -369,7 +369,7 @@ id: variables-example
 
 info:
   name: Variables Example
-  author: princechaddha
+  author: honeybee
   severity: info
 
 variables:
@@ -389,7 +389,7 @@ tcp:
           - \"{{a2}}\"
 ```
 
-Set the authorname as pd-bot
+Set the authorname as honeybee
 
 # Helper Functions
 Review details on helper functions for Nuclei

@@ -1,275 +1,111 @@
-import zipfile
 import streamlit as st
-from openai import OpenAI, AzureOpenAI
 import json
-import re
-import os
+from src.settings import get_llm_settings
+from src.client_provider import get_llm_client
+import src.generators as generators
 
-
-# Initialize OpenAI client
-client = AzureOpenAI(
-    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-    api_version="2024-07-01-preview",
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
-)
-
-# Set page configuration
+# Set up Streamlit page
 st.set_page_config(
     page_title="HoneyBee",
     page_icon=":bee:",
     layout="wide",
     initial_sidebar_state="expanded",
 )
-
-st.title("🐝 HoneyBee")
+st.title("🐝 Honey:orange[Bee]")
 st.subheader("Misconfigured App Simulator & Detector")
-# Simulate, Misconfigure, Detect
 
-application, dockerfile, nuclei = None, None, None
+# Get LLM settings from the sidebar
+settings = get_llm_settings()
 
-# Initialize session state variables if they don't exist
-if "dockerfile_generated" not in st.session_state:
-    st.session_state["dockerfile_generated"] = False
-if "nuclei_generated" not in st.session_state:
-    st.session_state["nuclei_generated"] = False
-if "oval_generated" not in st.session_state:
-    st.session_state["oval_generated"] = False
+# Validate API credentials
+if settings["provider"] == "OpenAI" and not settings["api_key"]:
+    st.warning("Please provide your OpenAI API Key in the Settings.")
+    st.stop()
+elif settings["provider"] == "Azure OpenAI" and (not settings.get("api_key") or not settings.get("azure_endpoint")):
+    st.warning("Please provide your Azure OpenAI API Key and Endpoint in the Settings.")
+    st.stop()
 
-def create_files_from_json(root_dir, json_data):
-    # Initialize list to collect all file paths for zipping later
-    files = []
+# Initialize LLM client and model
+client = get_llm_client(settings)
+model = settings["model"]
 
-    # Process JSON data and create directories/files as specified
-    for item in json_data:
-        # Sanitize file paths and names
-        file_name = re.sub(r'[^\w\-.]', '_', item["file_name"])  # Replace invalid characters in file names
-        file_path = re.sub(r'[^\w\-./]', '_', item["file_path"])  # Replace invalid characters in paths
+# Load misconfigurations data
+with open('misconfigurations_new.json') as f:
+    misconfigurations_data = json.load(f)
 
-        # Construct the full path (relative to the root_dir)
-        full_path = os.path.join(root_dir, file_path, file_name)
-
-        # Ensure the directory structure exists
-        os.makedirs(os.path.dirname(full_path), exist_ok=True)
-
-        # Write file content
-        with open(full_path, "w") as file:
-            file.write(item["file_content"])
-            files.append(full_path)  # Collect file path for later zipping
-
-        print(f"Created {full_path}")
-
-    return files
-
-
-# placeholder for columns
+# Toggle for custom mode
+custom_mode = st.toggle("Custom")
 placeholder = st.empty()
 
-# Define the initial columns
-with placeholder.container():
-    m1, m2, m3 = st.columns([1, 1, 2])
-    custom_mode = st.toggle("Custom")
-
-# Overwrite columns when custom_mode is toggled
-if custom_mode:
+# Define UI columns based on mode
+if not custom_mode:
+    with placeholder.container():
+        m1, m2, m3 = st.columns([1, 1, 2])
+        categories = list(misconfigurations_data.keys())
+        category = m1.selectbox("Choose a category:", categories)
+        if category:
+            applications = list(misconfigurations_data[category].keys())
+            application = m2.selectbox("Choose an application:", applications)
+            if application:
+                misconfigs = misconfigurations_data[category][application]
+                selected_misconfigurations = m3.multiselect("Choose misconfigurations:", misconfigs)
+else:
     with placeholder.container():
         m1, m2, m3 = st.columns([1, 3, 1])
+        application = m1.text_input("Enter application name:")
+        misconfig = m2.text_input("Enter Misconfiguration:")
+        selected_misconfigurations = [misconfig.strip()] if misconfig.strip() else []
 
-# Add tabs
-dockerfile_tab, dockercompose_tab, nuclei_tab, oval_tab = st.tabs(["Dockerfile", "Docker Compose", "Nuclei", "Oval"])
+# Create tabs for different generators
+dockerfile_tab, dockercompose_tab, nuclei_tab = st.tabs(
+    ["Dockerfile", "Docker Compose", "Nuclei"]
+)
 
-with open('misconfigurations_new.json') as f:
-    misconfigurations_data = json.loads(f.read())
-
-
-if not custom_mode:
-    # Standard mode with selectbox and multiselect
-    categories = list(misconfigurations_data.keys())
-    category = m1.selectbox("Choose a category:", categories)
-
-    if category:
-        applications = list(misconfigurations_data[category].keys())
-        application = m2.selectbox("Choose an application:", applications)
-
-        if application:
-            misconfigurations = misconfigurations_data[category][application]
-            selected_misconfigurations = m3.multiselect("Choose misconfigurations:", misconfigurations)
-
-# custom mode with text inputs
-else:
-    application = m1.text_input("Enter application name:")
-    misconfiguration = m2.text_input("Enter Misconfiguration:")
-
-    selected_misconfigurations = [misconfiguration.strip()] if misconfiguration.strip() else []
-
-
+# Dockerfile Tab
 with dockerfile_tab:
     if application and st.button("Generate Dockerfile"):
-        system_prompt = open('prompts/generate_dockerfile.md').read()
-        user_prompt = (
-            f"Generate a Dockerfile for {application} with the following misconfigurations: "
-            f"{', '.join(selected_misconfigurations)}."
-            f" Provide the output as a JSON object with 'file_name', 'file_path', and 'file_content' keys for each file."
-        )
-        with st.spinner("Generating Dockerfile..."):
-            chat_completion = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "system",
-                        "content": system_prompt,
-                    },
-                    {
-                        "role": "user",
-                        "content": user_prompt,
-                    }
-                ],
-                model="gpt-4o-barak",
-        )
+        dockerfile = generators.generate_dockerfile(client, model, application, selected_misconfigurations)
+        st.session_state["dockerfile_generated"] = True
+        st.session_state["dockerfile_content"] = dockerfile
+        st.success("Dockerfile generated successfully!")
 
-            api_response = chat_completion.choices[0].message.content
-            json_text = re.search(r'```json(.*?)```$', api_response, re.DOTALL).group(1)
-            dockerfile = json.loads(json_text)
-            st.session_state["dockerfile_generated"] = True
-            st.session_state["dockerfile_content"] = dockerfile
-            st.success("Dockerfile generated successfully!")
-
-    if st.session_state["dockerfile_generated"]:
-        # st.json(st.session_state["dockerfile_content"])
+    if st.session_state.get("dockerfile_generated"):
         files_json = st.session_state["dockerfile_content"]
         col1, col2 = st.columns(2)
         for item in files_json:
-            if item["file_type"] != "markdown":
+            if item.get("file_type") != "markdown":
                 col1.caption(f"{item['file_path']}/{item['file_name']}")
                 col1.code(item["file_content"], language="docker")
             else:
                 col2.caption(f"{item['file_name']}")
                 col2.markdown(item["file_content"])
 
-        col1.subheader("Optional: Add support for Ogal execution")
-        ogal_code = '''# Install libxml2 to support ogal execution
-RUN apt-get update && apt-get install -y libxml2 && rm -rf /var/lib/apt/lists/*
-
-# Copy the ogal file to the container and make it executable
-COPY ogal /usr/local/bin/ogal
-RUN chmod +x /usr/local/bin/ogal'''
-        col1.caption(f"add these lines to dockerfile to support ogal execution in ubuntu")
-        col1.code(ogal_code, language="docker")
-        ogal2_code = '''# Run the ogal command to execute the oval file
-        # Install libxml2 to support ogal execution
-RUN apk add --no-cache libxml2
-
-# Copy the ogal file to the container and make it executable
-COPY ogal /usr/local/bin/ogal
-RUN chmod +x /usr/local/bin/ogal'''
-        col1.caption(f"add these lines to dockerfile to support ogal execution in alpine")
-        col1.code(ogal2_code, language="docker")
-
-        # Use the first misconfiguration to help name the folder
-        if selected_misconfigurations:
-            misconfig = selected_misconfigurations[0].replace(' ', '_').lower()
-            folder_name = f"{application}_{misconfig}"
-            root_dir = f"out/{application}"
-
-            # Generate files based on GPT's Dockerfile JSON output
-            files = create_files_from_json(root_dir, st.session_state["dockerfile_content"])
-
-            # Zip and download the generated files
-            zip_filename = f"{folder_name}.zip"
-            with open(zip_filename, "wb") as file:
-                with zipfile.ZipFile(file, "w") as zip_file:
-                    for file_path in files:
-                        zip_file.write(file_path)
-
-            # Provide download button for the zip file
-            data = open(zip_filename, "rb").read()
-            st.download_button(f"Download {zip_filename}", data=data, file_name=zip_filename, on_click=None)
-
+# Docker Compose Tab
 with dockercompose_tab:
     if application and st.button("Generate Docker Compose"):
-        system_prompt = open('prompts/generate_dockercompose.md').read()
-        user_prompt = (
-            f"Generate a Docker Compose for {application} with the following misconfigurations: "
-            f"{', '.join(selected_misconfigurations)}. "
-            f"Provide the output as a JSON object with 'file_name', 'file_path', and 'file_content' keys for each file."
-        )
-        with st.spinner("Generating Docker Compose..."):
-            chat_completion = client.chat.completions.create(
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                model="gpt-4o-barak",
-            )
-
-            api_response = chat_completion.choices[0].message.content
-            json_text = re.search(r'```json(.*?)```$', api_response, re.DOTALL).group(1)
-            dockercompose = json.loads(json_text)
-            st.session_state["dockercompose_generated"] = True
-            st.session_state["dockercompose_content"] = dockercompose
-            st.success("Docker Compose generated successfully!")
+        dockercompose = generators.generate_docker_compose(client, model, application, selected_misconfigurations)
+        st.session_state["dockercompose_generated"] = True
+        st.session_state["dockercompose_content"] = dockercompose
+        st.success("Docker Compose generated successfully!")
 
     if st.session_state.get("dockercompose_generated"):
         files_json = st.session_state["dockercompose_content"]
         col1, col2 = st.columns(2)
         for item in files_json:
-            if item["file_type"] != "markdown":
+            if item.get("file_type") != "markdown":
                 col1.caption(f"{item['file_path']}/{item['file_name']}")
                 col1.code(item["file_content"], language="yaml")
             else:
                 col2.caption(f"{item['file_name']}")
                 col2.markdown(item["file_content"])
 
+# Nuclei Tab
 with nuclei_tab:
     if application and st.button("Generate Nuclei"):
-        system_prompt = open('prompts/write_nuclei_rule.md').read()
-        user_prompt = (f"Generate a Nuclei template for {application} with the following misconfigurations: "
-                       f"{', '.join(selected_misconfigurations)}. Return the template as JSON.")
-        with st.spinner("Generating Nuclei..."):
-            chat_completion = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "system",
-                        "content": system_prompt,
-                    },
-                    {
-                        "role": "user",
-                        "content": user_prompt
-                    }
-                ],
-                model="gpt-4o-barak",
-            )
-            nuclei = chat_completion.choices[0].message.content
-            st.session_state["nuclei_generated"] = True
-            st.session_state["nuclei_content"] = nuclei
-            st.success("Nuclei generated successfully!")
+        nuclei = generators.generate_nuclei(client, model, application, selected_misconfigurations)
+        st.session_state["nuclei_generated"] = True
+        st.session_state["nuclei_content"] = nuclei
+        st.success("Nuclei generated successfully!")
 
-    if st.session_state["nuclei_generated"]:
+    if st.session_state.get("nuclei_generated"):
         st.write(st.session_state["nuclei_content"])
-
-
-with oval_tab:
-    if application and st.button("Generate Oval"):
-        system_prompt = open('prompts/write_oval_rule.md').read()
-        user_prompt = (
-            f"Generate an Oval template for {application} with the following misconfigurations: "
-            f"{', '.join(selected_misconfigurations)}.")
-        with st.spinner("Generating Oval..."):
-            chat_completion = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "system",
-                        "content": system_prompt,
-                    },
-                    {
-                        "role": "user",
-                        "content": user_prompt
-                    }
-                ],
-                model="gpt-4o-barak",
-            )
-            oval = chat_completion.choices[0].message.content
-            st.session_state["oval_generated"] = True
-            st.session_state["oval_content"] = oval
-            st.success("Oval generated successfully!")
-
-    if st.session_state["oval_generated"]:
-        st.write(st.session_state["oval_content"])
