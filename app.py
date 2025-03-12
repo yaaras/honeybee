@@ -30,7 +30,7 @@ client = get_llm_client(settings)
 model = settings["model"]
 
 # Load misconfigurations data
-with open('misconfigurations_new.json') as f:
+with open('misconfigurations_catalog.json') as f:
     misconfigurations_data = json.load(f)
 
 # Toggle for custom mode
