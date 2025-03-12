@@ -4,8 +4,9 @@
 HoneyBee is a tool for creating misconfigured environments to test vulnerabilities in technologies like Jenkins, Jupyter Notebook, and more. 
 
 With the help of LLMs, HoneyBee generates:
-- **Dockerfiles** to replicate misconfigured applications.
+- **Dockerfiles** and Docker-compose files to replicate misconfigured applications.
 - **Nuclei templates** to detect vulnerabilities.
+- **README files** with instructions on how to use the generated files.
 
 ## How It Works
 - Choose a technology and a misconfiguration from a curated list of known issues, or write your own.
@@ -40,7 +41,7 @@ images/Honeybee_screenshot.png)
     ```
 2.	Install the required dependencies:
    ```bash
-   pip install -r requirements.txt
+  pip install -r requirements.txt
    ```
 
 3. Set up your OpenAI API key:
