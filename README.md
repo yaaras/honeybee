@@ -4,7 +4,7 @@
 HoneyBee is a tool for creating misconfigured environments to test vulnerabilities in technologies like Jenkins, Jupyter Notebook, and more. 
 
 With the help of LLMs, HoneyBee generates:
-- **Dockerfiles** and Docker-compose files to replicate misconfigured applications.
+- **Dockerfiles** and **Docker-compose** files to replicate misconfigured applications.
 - **Nuclei templates** to detect vulnerabilities (credit to a great template from the project [Fabric](https://github.com/danielmiessler/fabric)).
 - **README files** with instructions on how to use the generated files.
 
