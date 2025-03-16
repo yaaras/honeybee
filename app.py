@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-st.title("🐝 :orange[HoneyBee]")
+st.title("🐝 HoneyBee")
 st.subheader("Misconfigured App Simulator & Detector")
 
 # Get LLM settings from the sidebar
@@ -32,6 +32,23 @@ model = settings["model"]
 # Load misconfigurations data
 with open('misconfigurations_catalog.json') as f:
     misconfigurations_data = json.load(f)
+
+
+# Calculate metrics from the JSON data
+apps_count = 0
+misconfigs_count = 0
+
+for category, apps_dict in misconfigurations_data.items():
+    apps_count += len(apps_dict)
+    for app, misconfigs in apps_dict.items():
+        misconfigs_count += len(misconfigs)
+
+# Show metrics in the sidebar
+st.sidebar.markdown("---")
+st.sidebar.subheader("Metrics")
+col1, col2 = st.sidebar.columns(2)
+col1.metric("Apps", apps_count)
+col2.metric("Misconfigs", misconfigs_count)
 
 # Toggle for custom mode
 custom_mode = st.toggle("Custom")
