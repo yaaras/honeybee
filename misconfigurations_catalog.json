@@ -55,6 +55,28 @@
             "Directory listing enabled in the web server configuration",
             "Not using HTTPS for secure communication",
             "Incorrect file permissions on Laravel storage and cache directories"
+        ],
+        "Selenium Grid": [
+            "Improperly configured browser nodes leading to version mismatches",
+            "Lack of proper resource allocation causing overutilization of nodes",
+            "No security authentication setup for accessing the Grid",
+            "Exposing Grid and Node management ports to the internet",
+            "Improper logging configuration that omits important events",
+            "Not setting up proper shutdown hooks for nodes leading to unclean terminations",
+            "Ignoring network segmentation best practices for enhanced security",
+            "Not configuring SSL/TLS for secure communication between Hub and Nodes",
+            "Using default configurations without reviewing the security implications",
+            "Inadequate handling of browser instances, permitting unauthorized access"
+        ],
+        "SonarQube": [
+            "Default administrator credentials not changed",
+            "Lack of SSL/TLS configuration for secure communication",
+            "Improper access control settings",
+            "Outdated plugins with known vulnerabilities",
+            "Insufficient logging and monitoring configurations",
+            "Lack of automated backups",
+            "Deployment in public subnet without proper security groups",
+            "Inadequate input validation for custom plugins"
         ]
     },
     "Messaging Systems": {
@@ -81,6 +103,18 @@
             "Insecure configurations of Kafka Connect and Kafka Streams",
             "Improperly managed Kafka user credentials",
             "Kafka brokers exposing sensitive information due to misconfigured logging levels"
+        ],
+        "RabbitMQ": [
+            "Default credentials not changed",
+            "No SSL/TLS for communication encryption",
+            "Management plugin exposed on default port",
+            "Unauthorized access to the management console",
+            "Default virtual host and user not removed",
+            "Peer verification disabled",
+            "Inadequate logging and monitoring",
+            "Improperly secured configuration files",
+            "Open access to RabbitMQ ports",
+            "Lack of resource quotas leading to DoS attacks"
         ]
     },
     "Data Processing": {
@@ -152,6 +186,18 @@
             "Insecure deployment settings",
             "Using default ports",
             "Insufficient access controls for Nimbus"
+        ],
+        "Grafana": [
+            "Default admin password not changed",
+            "Admin user exposed to the internet",
+            "No data source authentication",
+            "Disabled HTTPS for web interface",
+            "Not configuring proper access control for dashboards",
+            "Lack of logging and monitoring",
+            "Failure to set up role-based access control (RBAC)",
+            "Outdated Grafana instance running with known vulnerabilities",
+            "Insecure or missing configuration for plugins",
+            "Improper handling of secrets and sensitive information"
         ]
     },
     "Web Servers": {
@@ -201,6 +247,18 @@
             "Logging not adequately configured to detect anomalies and potential attacks",
             "Non-compliance with the principle of least privilege by granting excessively broad permissions to roles",
             "Missing updates and security patches"
+        ],
+        "ClickHouse": [
+            "No password authentication for the default user",
+            "Running ClickHouse with elevated privileges (e.g., root)",
+            "Improperly configured network security groups allowing access from untrusted networks",
+            "Absence of encrypted connections (no TLS configured)",
+            "Exposing internal metrics endpoint without access control",
+            "Missing or insufficient logging and monitoring setup",
+            "Failure to regularly update and patch ClickHouse versions",
+            "Insecure or inappropriate use of user roles and permissions",
+            "Open HTTP interface without proper authentication",
+            "Storing sensitive data without encryption at rest"
         ]
     }
 }
