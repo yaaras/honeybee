@@ -3,6 +3,7 @@ import json
 from src.settings import get_llm_settings
 from src.client_provider import get_llm_client
 import src.generators as generators
+import src.query_history as query_history
 
 # Set up Streamlit page
 st.set_page_config(
@@ -21,7 +22,9 @@ settings = get_llm_settings()
 if settings["provider"] == "OpenAI" and not settings["api_key"]:
     st.warning("Please provide your OpenAI API Key in the Settings.")
     st.stop()
-elif settings["provider"] == "Azure OpenAI" and (not settings.get("api_key") or not settings.get("azure_endpoint")):
+elif settings["provider"] == "Azure OpenAI" and (
+    not settings.get("api_key") or not settings.get("azure_endpoint")
+):
     st.warning("Please provide your Azure OpenAI API Key and Endpoint in the Settings.")
     st.stop()
 
@@ -30,7 +33,7 @@ client = get_llm_client(settings)
 model = settings["model"]
 
 # Load misconfigurations data
-with open('misconfigurations_catalog.json') as f:
+with open("misconfigurations_catalog.json") as f:
     misconfigurations_data = json.load(f)
 
 
@@ -65,7 +68,9 @@ if not custom_mode:
             application = m2.selectbox("Choose an application:", applications)
             if application:
                 misconfigs = misconfigurations_data[category][application]
-                selected_misconfigurations = m3.multiselect("Choose misconfigurations:", misconfigs)
+                selected_misconfigurations = m3.multiselect(
+                    "Choose misconfigurations:", misconfigs
+                )
 else:
     with placeholder.container():
         m1, m2, m3 = st.columns([1, 3, 1])
@@ -81,9 +86,14 @@ dockerfile_tab, dockercompose_tab, nuclei_tab = st.tabs(
 # Dockerfile Tab
 with dockerfile_tab:
     if application and st.button("Generate Dockerfile"):
-        dockerfile = generators.generate_dockerfile(client, model, application, selected_misconfigurations)
+        dockerfile = generators.generate_dockerfile(
+            client, model, application, selected_misconfigurations
+        )
         st.session_state["dockerfile_generated"] = True
         st.session_state["dockerfile_content"] = dockerfile
+        query_history.save_query(
+            "dockerfile", [application, selected_misconfigurations], dockerfile
+        )
         st.success("Dockerfile generated successfully!")
 
     if st.session_state.get("dockerfile_generated"):
@@ -100,9 +110,14 @@ with dockerfile_tab:
 # Docker Compose Tab
 with dockercompose_tab:
     if application and st.button("Generate Docker Compose"):
-        dockercompose = generators.generate_docker_compose(client, model, application, selected_misconfigurations)
+        dockercompose = generators.generate_docker_compose(
+            client, model, application, selected_misconfigurations
+        )
         st.session_state["dockercompose_generated"] = True
         st.session_state["dockercompose_content"] = dockercompose
+        query_history.save_query(
+            "dockercompose", [application, selected_misconfigurations], dockercompose
+        )
         st.success("Docker Compose generated successfully!")
 
     if st.session_state.get("dockercompose_generated"):
@@ -119,9 +134,14 @@ with dockercompose_tab:
 # Nuclei Tab
 with nuclei_tab:
     if application and st.button("Generate Nuclei"):
-        nuclei = generators.generate_nuclei(client, model, application, selected_misconfigurations)
+        nuclei = generators.generate_nuclei(
+            client, model, application, selected_misconfigurations
+        )
         st.session_state["nuclei_generated"] = True
         st.session_state["nuclei_content"] = nuclei
+        query_history.save_query(
+            "nuclei", [application, selected_misconfigurations], nuclei
+        )
         st.success("Nuclei generated successfully!")
 
     if st.session_state.get("nuclei_generated"):
