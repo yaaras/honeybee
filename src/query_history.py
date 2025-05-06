@@ -12,3 +12,8 @@ def save_query(type, input_parameters, output):
     query_time = time.time()
     data = {"type": type, "input_parameters": input_parameters, "output": output}
     HISTORY_PATH.joinpath(f"{query_time}.json").write_text(json.dumps(data))
+
+
+def load_history():
+    query_files = HISTORY_PATH.glob("*.json")
+    return {q.with_suffix("").name: json.loads(q.read_text()) for q in query_files}
