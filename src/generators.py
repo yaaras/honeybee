@@ -62,16 +62,63 @@ def generate_nuclei(client, model, application, misconfigurations):
     return chat_completion.choices[0].message.content
 
 
-def generate_oval(client, model, application, misconfigurations):
+def generate_dockerfile_from_markdown(client, model, markdown_content):
+    """
+    Generate a Dockerfile based purely on provided markdown specification.
+    """
     user_prompt = (
-        f"Generate an Oval template for {application} with the following misconfigurations: "
-        f"{', '.join(misconfigurations)}."
+        "Generate a Dockerfile based on the following markdown specification:\n"
+        f"{markdown_content}\n"
+        "Provide the output as a JSON object with 'file_name', 'file_path', and 'file_content' keys for each file."
+    )
+    return generate_from_prompt(
+        client, model, "prompts/generate_dockerfile.md", user_prompt
+    )
+
+
+def generate_docker_compose_from_markdown(client, model, markdown_content):
+    """
+    Generate a Docker Compose based purely on provided markdown specification.
+    """
+    user_prompt = (
+        "Generate a Docker Compose based on the following markdown specification:\n"
+        f"{markdown_content}\n"
+        "Provide the output as a JSON object with 'file_name', 'file_path', and 'file_content' keys for each file."
+    )
+    return generate_from_prompt(
+        client, model, "prompts/generate_dockercompose.md", user_prompt
+    )
+
+
+def generate_nuclei_from_markdown(client, model, markdown_content):
+    """
+    Generate a Nuclei template based purely on provided markdown specification.
+    """
+    user_prompt = (
+        "Generate a Nuclei template based on the following markdown specification:\n"
+        f"{markdown_content}\n"
+        "Return the template as JSON."
     )
     chat_completion = client.chat.completions.create(
         messages=[
-            {"role": "system", "content": open("prompts/write_oval_rule.md").read()},
+            {"role": "system", "content": open("prompts/write_nuclei_rule.md").read()},
             {"role": "user", "content": user_prompt},
         ],
         model=model,
     )
-    return chat_completion.choices[0].message.content
+    return chat_completion.choices[0].message.content\
+
+
+def extract_application_from_markdown(client, model, markdown_content):
+    """
+    Extract application name from the provided markdown content.
+    """
+    user_prompt = (
+        "Extract the application name from the following markdown content:\n"
+        f"{markdown_content}\n"
+        "Return the application name as a string."
+    )
+    response = generate_from_prompt(
+        client, model, "prompts/extract_application.md", user_prompt
+    )
+    return response.get("application_name", "")

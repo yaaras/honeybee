@@ -81,3 +81,19 @@ def get_llm_settings():
     st.session_state["model"] = settings["model"]
 
     return settings
+
+
+def get_jina_ai_api_key():
+    """
+    Get the Jina AI API key from environment variables or Streamlit session state.
+    """
+    api_key = os.getenv("JINA_API_TOKEN")
+    if not api_key:
+        api_key = st.session_state.get("jina_api_key", "")
+        if not api_key:
+            api_key = st.sidebar.text_input(
+                "Enter your Jina AI API Key",
+                type="password",
+                key="jina_api_key",
+            )
+    return api_key
