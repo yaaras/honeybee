@@ -1,7 +1,8 @@
+import requests
 import streamlit as st
 import json
 import time
-from src.settings import get_llm_settings
+from src.settings import get_llm_settings, get_jina_ai_api_key
 from src.client_provider import get_llm_client
 from src.validations import run_yamlfix
 import src.generators as generators
@@ -34,6 +35,9 @@ elif settings["provider"] == "Azure OpenAI" and (
 client = get_llm_client(settings)
 model = settings["model"]
 
+# Get Jina AI API key
+jina_ai_api = get_jina_ai_api_key()
+
 # Load misconfigurations data
 with open("misconfigurations_catalog.json") as f:
     misconfigurations_data = json.load(f)
@@ -51,46 +55,132 @@ for category, apps_dict in misconfigurations_data.items():
 # Show metrics in the sidebar
 st.sidebar.markdown("---")
 st.sidebar.subheader("Metrics")
-col1, col2 = st.sidebar.columns(2)
-col1.metric("Apps", apps_count)
-col2.metric("Misconfigs", misconfigs_count)
+s1, s2 = st.sidebar.columns(2)
+s1.metric("Apps", apps_count)
+s2.metric("Misconfigs", misconfigs_count)
 
-# Toggle for custom mode
-custom_mode = st.toggle("Custom")
-placeholder = st.empty()
 
-# Define UI columns based on mode
-if not custom_mode:
-    with placeholder.container():
-        m1, m2, m3 = st.columns([1, 1, 2])
-        categories = list(misconfigurations_data.keys())
-        category = m1.selectbox("Choose a category:", categories)
-        if category:
-            applications = list(misconfigurations_data[category].keys())
-            application = m2.selectbox("Choose an application:", applications)
-            if application:
-                misconfigs = misconfigurations_data[category][application]
-                selected_misconfigurations = m3.multiselect(
-                    "Choose misconfigurations:", misconfigs
-                )
+input_mode = st.segmented_control(
+    "How do you want to provide your input?",
+    options=[
+        "Browse Catalog",
+        "Custom Input",
+        "Import from URL",
+        "Paste Markdown",
+    ],
+    default="Browse Catalog",
+)
+
+# prepare outputs
+selected_misconfigurations = []
+input_content = None
+
+# load from list of misconfigurations
+if input_mode == "Browse Catalog":
+    m1, m2, m3 = st.columns([1, 1, 2])
+    categories = list(misconfigurations_data.keys())
+    category  = m1.selectbox("Choose a category:", categories)
+    if category:
+        applications = list(misconfigurations_data[category].keys())
+        application = m2.selectbox("Choose an application:", applications)
+        if application:
+            misconfigs = misconfigurations_data[category][application]
+            selected_misconfigurations = m3.multiselect(
+                "Choose misconfigurations:", misconfigs
+            )
+
+# load from custom input
+elif input_mode == "Custom Input":
+    m1, m2 = st.columns([1, 3])
+    application = m1.text_input("Enter application name:")
+    misconfig    = m2.text_input("Enter Misconfiguration:")
+    selected_misconfigurations = [misconfig.strip()] if misconfig.strip() else []
+
+# load from URL
+elif input_mode == "Import from URL":
+    url = st.text_input(
+        "Enter URL to scrape and convert to Markdown:",
+        value=st.session_state.get("url", ""),
+        help="Hit Enter or click away to load."
+    )
+    st.session_state.url = url
+
+    if not jina_ai_api:
+        st.warning("Please provide your Jina AI API Key in the Settings.")
+        st.stop()
+
+    if url:
+        # call Jina-AI proxy
+        jina_ai_url = f"https://r.jina.ai/{url}"
+        resp = requests.get(
+            jina_ai_url,
+            headers={"Authorization": f"Bearer {jina_ai_api}"}
+        )
+        if resp.status_code == 200:
+            input_content = resp.text
+            # max length is 8192 characters, so we truncate it
+            input_content = input_content[:8192]
+            st.success("✅ URL content loaded successfully!")
+            with st.expander("URL Content Preview", expanded=False):
+                st.code(input_content, language="markdown")
+        else:
+            st.error(f"Failed to fetch URL (status {resp.status_code})")
+
 else:
-    with placeholder.container():
-        m1, m2, m3 = st.columns([1, 3, 1])
-        application = m1.text_input("Enter application name:")
-        misconfig = m2.text_input("Enter Misconfiguration:")
-        selected_misconfigurations = [misconfig.strip()] if misconfig.strip() else []
+    # Manual input mode
+    application = st.text_input(
+        "Enter application name:",
+        value=st.session_state.get("application", ""),
+        help="Enter the name of the application you want to simulate."
+    )
+    st.session_state.application = application
+
+    input_content = st.text_area(
+        "Enter custom text:",
+        value=st.session_state.get("input_content", ""),
+        height=200,
+        help="Enter custom text to generate configurations."
+    )
+    st.session_state.input_content = input_content
+    if input_content:
+        # max length is 8192 characters, so we truncate it
+        input_content = input_content[:8192]
+
+if input_mode == "Import from URL" and input_content:
+    prompt_source = input_content
+    application = generators.extract_application_from_markdown(client, model, input_content)
+elif input_mode == "Paste Markdown" and input_content:
+    prompt_source = input_content
+    application = st.session_state.get("application", "")
+    if not application:
+        st.warning("Please enter an application name.")
+        st.stop()
+else:
+    prompt_source = "\n".join(selected_misconfigurations)
+
+if not prompt_source.strip():
+    st.warning("Please select misconfigurations, enter custom text, or provide a URL.")
+    st.stop()
+
+
+# TABS
 
 # Create tabs for different generators
-dockerfile_tab, dockercompose_tab, nuclei_tab, history_tab = st.tabs(
-    ["Dockerfile", "Docker Compose", "Nuclei", "History"]
+dockercompose_tab, dockerfile_tab, nuclei_tab, history_tab = st.tabs(
+    ["Docker Compose", "Dockerfile", "Nuclei", "History"]
 )
 
 # Dockerfile Tab
 with dockerfile_tab:
-    if application and st.button("Generate Dockerfile"):
-        dockerfile = generators.generate_dockerfile(
-            client, model, application, selected_misconfigurations
-        )
+    if application and st.button("Generate Dockerfile", use_container_width=True, type="primary"):
+        if input_mode in ("Import from URL", "Paste Markdown"):
+            dockerfile = generators.generate_dockerfile_from_markdown(
+                client, model, input_content
+            )
+        else:
+            dockerfile = generators.generate_dockerfile(
+                client, model, application, selected_misconfigurations
+            )
         st.session_state["dockerfile_generated"] = True
         st.session_state["dockerfile_content"] = dockerfile
         query_history.save_query(
@@ -111,10 +201,15 @@ with dockerfile_tab:
 
 # Docker Compose Tab
 with dockercompose_tab:
-    if application and st.button("Generate Docker Compose"):
-        dockercompose = generators.generate_docker_compose(
-            client, model, application, selected_misconfigurations
-        )
+    if application and st.button("Generate Docker Compose", use_container_width=True, type="primary"):
+        if input_mode in ("Import from URL", "Paste Markdown"):
+            dockercompose = generators.generate_docker_compose_from_markdown(
+                client, model, input_content
+            )
+        else:
+            dockercompose = generators.generate_docker_compose(
+                client, model, application, selected_misconfigurations
+            )
         for item in dockercompose:
             if item["file_type"].lower() == "yaml":
                 # Try to imporove the docker-compose output using yamlfix.
@@ -141,10 +236,15 @@ with dockercompose_tab:
 
 # Nuclei Tab
 with nuclei_tab:
-    if application and st.button("Generate Nuclei"):
-        nuclei = generators.generate_nuclei(
-            client, model, application, selected_misconfigurations
-        )
+    if application and st.button("Generate Nuclei", use_container_width=True, type="primary"):
+        if input_mode in ("Import from URL", "Paste Markdown"):
+            nuclei = generators.generate_nuclei_from_markdown(
+                client, model, input_content
+            )
+        else:
+            nuclei = generators.generate_nuclei(
+                client, model, application, selected_misconfigurations
+            )
         st.session_state["nuclei_generated"] = True
         st.session_state["nuclei_content"] = nuclei
         query_history.save_query(

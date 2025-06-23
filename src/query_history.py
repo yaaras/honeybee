@@ -7,6 +7,10 @@ from pathlib import Path
 
 HISTORY_PATH = Path(".qhistory")
 
+# check if the history directory exists, if not create it
+if not HISTORY_PATH.exists():
+    HISTORY_PATH.mkdir(parents=True, exist_ok=True)
+
 
 def save_query(type, input_parameters, output):
     query_time = time.time()
