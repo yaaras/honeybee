@@ -59,16 +59,16 @@ s1, s2 = st.sidebar.columns(2)
 s1.metric("Apps", apps_count)
 s2.metric("Misconfigs", misconfigs_count)
 
+# input options
+browse_catalog = ":material/sort: Browse Catalog"
+custom_input = ":material/manage_search: Custom Input"
+import_url = ":material/add_link: Import from URL"
+paste_input = ":material/content_paste: Paste Content"
 
 input_mode = st.segmented_control(
     "How do you want to provide your input?",
-    options=[
-        "Browse Catalog",
-        "Custom Input",
-        "Import from URL",
-        "Paste Markdown",
-    ],
-    default="Browse Catalog",
+    options=[browse_catalog, custom_input, import_url, paste_input],
+    default=browse_catalog,
 )
 
 # prepare outputs
@@ -76,7 +76,7 @@ selected_misconfigurations = []
 input_content = None
 
 # load from list of misconfigurations
-if input_mode == "Browse Catalog":
+if input_mode == browse_catalog:
     m1, m2, m3 = st.columns([1, 1, 2])
     categories = list(misconfigurations_data.keys())
     category  = m1.selectbox("Choose a category:", categories)
@@ -90,14 +90,14 @@ if input_mode == "Browse Catalog":
             )
 
 # load from custom input
-elif input_mode == "Custom Input":
+elif input_mode == custom_input:
     m1, m2 = st.columns([1, 3])
     application = m1.text_input("Enter application name:")
     misconfig    = m2.text_input("Enter Misconfiguration:")
     selected_misconfigurations = [misconfig.strip()] if misconfig.strip() else []
 
 # load from URL
-elif input_mode == "Import from URL":
+elif input_mode == import_url:
     url = st.text_input(
         "Enter URL to scrape and convert to Markdown:",
         value=st.session_state.get("url", ""),
@@ -146,10 +146,10 @@ else:
         # max length is 8192 characters, so we truncate it
         input_content = input_content[:8192]
 
-if input_mode == "Import from URL" and input_content:
+if input_mode == import_url and input_content:
     prompt_source = input_content
     application = generators.extract_application_from_markdown(client, model, input_content)
-elif input_mode == "Paste Markdown" and input_content:
+elif input_mode == paste_input and input_content:
     prompt_source = input_content
     application = st.session_state.get("application", "")
     if not application:
@@ -173,7 +173,7 @@ dockercompose_tab, dockerfile_tab, nuclei_tab, history_tab = st.tabs(
 # Dockerfile Tab
 with dockerfile_tab:
     if application and st.button("Generate Dockerfile", use_container_width=True, type="primary"):
-        if input_mode in ("Import from URL", "Paste Markdown"):
+        if input_mode in (import_url, paste_input):
             dockerfile = generators.generate_dockerfile_from_markdown(
                 client, model, input_content
             )
@@ -202,7 +202,7 @@ with dockerfile_tab:
 # Docker Compose Tab
 with dockercompose_tab:
     if application and st.button("Generate Docker Compose", use_container_width=True, type="primary"):
-        if input_mode in ("Import from URL", "Paste Markdown"):
+        if input_mode in (import_url, paste_input):
             dockercompose = generators.generate_docker_compose_from_markdown(
                 client, model, input_content
             )
@@ -237,7 +237,7 @@ with dockercompose_tab:
 # Nuclei Tab
 with nuclei_tab:
     if application and st.button("Generate Nuclei", use_container_width=True, type="primary"):
-        if input_mode in ("Import from URL", "Paste Markdown"):
+        if input_mode in (import_url, paste_input):
             nuclei = generators.generate_nuclei_from_markdown(
                 client, model, input_content
             )
@@ -256,60 +256,60 @@ with nuclei_tab:
         st.write(st.session_state["nuclei_content"])
 
 
-@st.dialog(title="Run History", width="large")
-def display_history_result(type, output):
-    st.write(
-        """<style>
-        .stDialog *[role="dialog"] {
-            width: 85%;
-        }
-        </style>""",
-        unsafe_allow_html=True,
-    )
-    if type in ("Dockerfile", "Docker Compose"):
-        files_json = output
-        col1, col2 = st.columns(2)
-        for item in files_json:
-            if item.get("file_type") != "markdown":
-                col1.caption(f"{item['file_path']}/{item['file_name']}")
-                col1.code(item["file_content"], language="docker")
-            else:
-                col2.caption(f"{item['file_name']}")
-                col2.markdown(item["file_content"])
-    elif type == "Nuclei":
-        st.write(output)
-
-
-# History tab
-with history_tab:
-    history_data = query_history.load_history()
-    # Show the latest queries first
-    historical_queries = sorted(history_data.items(), reverse=True)
-    with st.container(height=800):
-        for q_time, q_data in historical_queries:
-            with st.container(border=True):
-                (runtime_col,) = st.columns(1)
-                tech_col, misconfigs_col = st.columns(2)
-                (load_col,) = st.columns(1)
-                runtime_col.text(time.ctime(float(q_time)))
-                tech, misconfigs = q_data["input_parameters"]
-                tech_col.selectbox(
-                    "Application",
-                    options=[tech],
-                    index=0,
-                    disabled=True,
-                    key=f"{q_time}_{tech}",
-                )
-                misconfigs_col.multiselect(
-                    "Misconfigurations",
-                    options=misconfigs,
-                    default=misconfigs,
-                    disabled=True,
-                    key=f"{q_time}_{misconfigs}",
-                )
-                load_col.button(
-                    f"Load {q_data['type']}",
-                    key=f"{q_time}_{q_data['type']}",
-                    on_click=display_history_result,
-                    args=(q_data["type"], q_data["output"]),
-                )
+# @st.dialog(title="Run History", width="large")
+# def display_history_result(type, output):
+#     st.write(
+#         """<style>
+#         .stDialog *[role="dialog"] {
+#             width: 85%;
+#         }
+#         </style>""",
+#         unsafe_allow_html=True,
+#     )
+#     if type in ("Dockerfile", "Docker Compose"):
+#         files_json = output
+#         col1, col2 = st.columns(2)
+#         for item in files_json:
+#             if item.get("file_type") != "markdown":
+#                 col1.caption(f"{item['file_path']}/{item['file_name']}")
+#                 col1.code(item["file_content"], language="docker")
+#             else:
+#                 col2.caption(f"{item['file_name']}")
+#                 col2.markdown(item["file_content"])
+#     elif type == "Nuclei":
+#         st.write(output)
+#
+#
+# # History tab
+# with history_tab:
+#     history_data = query_history.load_history()
+#     # Show the latest queries first
+#     historical_queries = sorted(history_data.items(), reverse=True)
+#     with st.container(height=800):
+#         for q_time, q_data in historical_queries:
+#             with st.container(border=True):
+#                 (runtime_col,) = st.columns(1)
+#                 tech_col, misconfigs_col = st.columns(2)
+#                 (load_col,) = st.columns(1)
+#                 runtime_col.text(time.ctime(float(q_time)))
+#                 tech, misconfigs = q_data["input_parameters"]
+#                 tech_col.selectbox(
+#                     "Application",
+#                     options=[tech],
+#                     index=0,
+#                     disabled=True,
+#                     key=f"{q_time}_{tech}",
+#                 )
+#                 misconfigs_col.multiselect(
+#                     "Misconfigurations",
+#                     options=misconfigs,
+#                     default=misconfigs,
+#                     disabled=True,
+#                     key=f"{q_time}_{misconfigs}",
+#                 )
+#                 load_col.button(
+#                     f"Load {q_data['type']}",
+#                     key=f"{q_time}_{q_data['type']}",
+#                     on_click=display_history_result,
+#                     args=(q_data["type"], q_data["output"]),
+#                 )

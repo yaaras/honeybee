@@ -36,7 +36,7 @@ def get_llm_settings():
             st.sidebar.info("Using OpenAI API Key from environment variable")
         settings["api_key"] = openai_api_key
 
-        default_model = st.session_state.get("model", "gpt-4")
+        default_model = st.session_state.get("model", "gpt-4o")
         model = st.sidebar.text_input(
             "Model",
             value=default_model,
@@ -68,7 +68,7 @@ def get_llm_settings():
             )
         settings["azure_endpoint"] = azure_endpoint
 
-        default_model = st.session_state.get("model", "gpt-4o-barak")
+        default_model = st.session_state.get("model", "gpt-4o")
         model = st.sidebar.text_input(
             "Model",
             value=default_model,
