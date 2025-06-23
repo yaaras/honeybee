@@ -110,21 +110,22 @@ elif input_mode == import_url:
         st.stop()
 
     if url:
-        # call Jina-AI proxy
-        jina_ai_url = f"https://r.jina.ai/{url}"
-        resp = requests.get(
-            jina_ai_url,
-            headers={"Authorization": f"Bearer {jina_ai_api}"}
-        )
-        if resp.status_code == 200:
-            input_content = resp.text
-            # max length is 8192 characters, so we truncate it
-            input_content = input_content[:8192]
-            st.success("✅ URL content loaded successfully!")
-            with st.expander("URL Content Preview", expanded=False):
-                st.code(input_content, language="markdown")
-        else:
-            st.error(f"Failed to fetch URL (status {resp.status_code})")
+        with st.spinner("Loading URL content..."):
+            # call Jina-AI proxy
+            jina_ai_url = f"https://r.jina.ai/{url}"
+            resp = requests.get(
+                jina_ai_url,
+                headers={"Authorization": f"Bearer {jina_ai_api}"}
+            )
+            if resp.status_code == 200:
+                input_content = resp.text
+                # max length is 8192 characters, so we truncate it
+                input_content = input_content[:8192]
+                st.success("✅ URL content loaded successfully!")
+                with st.expander("URL Content Preview", expanded=False):
+                    st.code(input_content, language="markdown")
+            else:
+                st.error(f"Failed to fetch URL (status {resp.status_code})")
 
 else:
     # Manual input mode
@@ -173,14 +174,15 @@ dockercompose_tab, dockerfile_tab, nuclei_tab, history_tab = st.tabs(
 # Dockerfile Tab
 with dockerfile_tab:
     if application and st.button("Generate Dockerfile", use_container_width=True, type="primary"):
-        if input_mode in (import_url, paste_input):
-            dockerfile = generators.generate_dockerfile_from_markdown(
-                client, model, input_content
-            )
-        else:
-            dockerfile = generators.generate_dockerfile(
-                client, model, application, selected_misconfigurations
-            )
+        with st.spinner("Generating Dockerfile..."):
+            if input_mode in (import_url, paste_input):
+                dockerfile = generators.generate_dockerfile_from_markdown(
+                    client, model, input_content
+                )
+            else:
+                dockerfile = generators.generate_dockerfile(
+                    client, model, application, selected_misconfigurations
+                )
         st.session_state["dockerfile_generated"] = True
         st.session_state["dockerfile_content"] = dockerfile
         query_history.save_query(
@@ -202,19 +204,20 @@ with dockerfile_tab:
 # Docker Compose Tab
 with dockercompose_tab:
     if application and st.button("Generate Docker Compose", use_container_width=True, type="primary"):
-        if input_mode in (import_url, paste_input):
-            dockercompose = generators.generate_docker_compose_from_markdown(
-                client, model, input_content
-            )
-        else:
-            dockercompose = generators.generate_docker_compose(
-                client, model, application, selected_misconfigurations
-            )
-        for item in dockercompose:
-            if item["file_type"].lower() == "yaml":
-                # Try to imporove the docker-compose output using yamlfix.
-                fixed_code = run_yamlfix(item["file_content"])
-                item["file_content"] = fixed_code
+        with st.spinner("Generating Docker Compose..."):
+            if input_mode in (import_url, paste_input):
+                dockercompose = generators.generate_docker_compose_from_markdown(
+                    client, model, input_content
+                )
+            else:
+                dockercompose = generators.generate_docker_compose(
+                    client, model, application, selected_misconfigurations
+                )
+            for item in dockercompose:
+                if item["file_type"].lower() == "yaml":
+                    # Try to imporove the docker-compose output using yamlfix.
+                    fixed_code = run_yamlfix(item["file_content"])
+                    item["file_content"] = fixed_code
 
         st.session_state["dockercompose_generated"] = True
         st.session_state["dockercompose_content"] = dockercompose
@@ -237,14 +240,15 @@ with dockercompose_tab:
 # Nuclei Tab
 with nuclei_tab:
     if application and st.button("Generate Nuclei", use_container_width=True, type="primary"):
-        if input_mode in (import_url, paste_input):
-            nuclei = generators.generate_nuclei_from_markdown(
-                client, model, input_content
-            )
-        else:
-            nuclei = generators.generate_nuclei(
-                client, model, application, selected_misconfigurations
-            )
+        with st.spinner("Generating Nuclei..."):
+            if input_mode in (import_url, paste_input):
+                nuclei = generators.generate_nuclei_from_markdown(
+                    client, model, input_content
+                )
+            else:
+                nuclei = generators.generate_nuclei(
+                    client, model, application, selected_misconfigurations
+                )
         st.session_state["nuclei_generated"] = True
         st.session_state["nuclei_content"] = nuclei
         query_history.save_query(
@@ -255,61 +259,3 @@ with nuclei_tab:
     if st.session_state.get("nuclei_generated"):
         st.write(st.session_state["nuclei_content"])
 
-
-# @st.dialog(title="Run History", width="large")
-# def display_history_result(type, output):
-#     st.write(
-#         """<style>
-#         .stDialog *[role="dialog"] {
-#             width: 85%;
-#         }
-#         </style>""",
-#         unsafe_allow_html=True,
-#     )
-#     if type in ("Dockerfile", "Docker Compose"):
-#         files_json = output
-#         col1, col2 = st.columns(2)
-#         for item in files_json:
-#             if item.get("file_type") != "markdown":
-#                 col1.caption(f"{item['file_path']}/{item['file_name']}")
-#                 col1.code(item["file_content"], language="docker")
-#             else:
-#                 col2.caption(f"{item['file_name']}")
-#                 col2.markdown(item["file_content"])
-#     elif type == "Nuclei":
-#         st.write(output)
-#
-#
-# # History tab
-# with history_tab:
-#     history_data = query_history.load_history()
-#     # Show the latest queries first
-#     historical_queries = sorted(history_data.items(), reverse=True)
-#     with st.container(height=800):
-#         for q_time, q_data in historical_queries:
-#             with st.container(border=True):
-#                 (runtime_col,) = st.columns(1)
-#                 tech_col, misconfigs_col = st.columns(2)
-#                 (load_col,) = st.columns(1)
-#                 runtime_col.text(time.ctime(float(q_time)))
-#                 tech, misconfigs = q_data["input_parameters"]
-#                 tech_col.selectbox(
-#                     "Application",
-#                     options=[tech],
-#                     index=0,
-#                     disabled=True,
-#                     key=f"{q_time}_{tech}",
-#                 )
-#                 misconfigs_col.multiselect(
-#                     "Misconfigurations",
-#                     options=misconfigs,
-#                     default=misconfigs,
-#                     disabled=True,
-#                     key=f"{q_time}_{misconfigs}",
-#                 )
-#                 load_col.button(
-#                     f"Load {q_data['type']}",
-#                     key=f"{q_time}_{q_data['type']}",
-#                     on_click=display_history_result,
-#                     args=(q_data["type"], q_data["output"]),
-#                 )
