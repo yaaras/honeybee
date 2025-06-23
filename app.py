@@ -110,21 +110,22 @@ elif input_mode == import_url:
         st.stop()
 
     if url:
-        # call Jina-AI proxy
-        jina_ai_url = f"https://r.jina.ai/{url}"
-        resp = requests.get(
-            jina_ai_url,
-            headers={"Authorization": f"Bearer {jina_ai_api}"}
-        )
-        if resp.status_code == 200:
-            input_content = resp.text
-            # max length is 8192 characters, so we truncate it
-            input_content = input_content[:8192]
-            st.success("✅ URL content loaded successfully!")
-            with st.expander("URL Content Preview", expanded=False):
-                st.code(input_content, language="markdown")
-        else:
-            st.error(f"Failed to fetch URL (status {resp.status_code})")
+        with st.spinner("Loading URL content..."):
+            # call Jina-AI proxy
+            jina_ai_url = f"https://r.jina.ai/{url}"
+            resp = requests.get(
+                jina_ai_url,
+                headers={"Authorization": f"Bearer {jina_ai_api}"}
+            )
+            if resp.status_code == 200:
+                input_content = resp.text
+                # max length is 8192 characters, so we truncate it
+                input_content = input_content[:8192]
+                st.success("✅ URL content loaded successfully!")
+                with st.expander("URL Content Preview", expanded=False):
+                    st.code(input_content, language="markdown")
+            else:
+                st.error(f"Failed to fetch URL (status {resp.status_code})")
 
 else:
     # Manual input mode
@@ -173,14 +174,15 @@ dockercompose_tab, dockerfile_tab, nuclei_tab, history_tab = st.tabs(
 # Dockerfile Tab
 with dockerfile_tab:
     if application and st.button("Generate Dockerfile", use_container_width=True, type="primary"):
-        if input_mode in (import_url, paste_input):
-            dockerfile = generators.generate_dockerfile_from_markdown(
-                client, model, input_content
-            )
-        else:
-            dockerfile = generators.generate_dockerfile(
-                client, model, application, selected_misconfigurations
-            )
+        with st.spinner("Generating Dockerfile..."):
+            if input_mode in (import_url, paste_input):
+                dockerfile = generators.generate_dockerfile_from_markdown(
+                    client, model, input_content
+                )
+            else:
+                dockerfile = generators.generate_dockerfile(
+                    client, model, application, selected_misconfigurations
+                )
         st.session_state["dockerfile_generated"] = True
         st.session_state["dockerfile_content"] = dockerfile
         query_history.save_query(
@@ -202,19 +204,20 @@ with dockerfile_tab:
 # Docker Compose Tab
 with dockercompose_tab:
     if application and st.button("Generate Docker Compose", use_container_width=True, type="primary"):
-        if input_mode in (import_url, paste_input):
-            dockercompose = generators.generate_docker_compose_from_markdown(
-                client, model, input_content
-            )
-        else:
-            dockercompose = generators.generate_docker_compose(
-                client, model, application, selected_misconfigurations
-            )
-        for item in dockercompose:
-            if item["file_type"].lower() == "yaml":
-                # Try to imporove the docker-compose output using yamlfix.
-                fixed_code = run_yamlfix(item["file_content"])
-                item["file_content"] = fixed_code
+        with st.spinner("Generating Docker Compose..."):
+            if input_mode in (import_url, paste_input):
+                dockercompose = generators.generate_docker_compose_from_markdown(
+                    client, model, input_content
+                )
+            else:
+                dockercompose = generators.generate_docker_compose(
+                    client, model, application, selected_misconfigurations
+                )
+            for item in dockercompose:
+                if item["file_type"].lower() == "yaml":
+                    # Try to imporove the docker-compose output using yamlfix.
+                    fixed_code = run_yamlfix(item["file_content"])
+                    item["file_content"] = fixed_code
 
         st.session_state["dockercompose_generated"] = True
         st.session_state["dockercompose_content"] = dockercompose
@@ -237,14 +240,15 @@ with dockercompose_tab:
 # Nuclei Tab
 with nuclei_tab:
     if application and st.button("Generate Nuclei", use_container_width=True, type="primary"):
-        if input_mode in (import_url, paste_input):
-            nuclei = generators.generate_nuclei_from_markdown(
-                client, model, input_content
-            )
-        else:
-            nuclei = generators.generate_nuclei(
-                client, model, application, selected_misconfigurations
-            )
+        with st.spinner("Generating Nuclei..."):
+            if input_mode in (import_url, paste_input):
+                nuclei = generators.generate_nuclei_from_markdown(
+                    client, model, input_content
+                )
+            else:
+                nuclei = generators.generate_nuclei(
+                    client, model, application, selected_misconfigurations
+                )
         st.session_state["nuclei_generated"] = True
         st.session_state["nuclei_content"] = nuclei
         query_history.save_query(
