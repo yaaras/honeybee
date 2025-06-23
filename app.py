@@ -3,6 +3,7 @@ import json
 import time
 from src.settings import get_llm_settings
 from src.client_provider import get_llm_client
+from src.validations import run_yamlfix
 import src.generators as generators
 import src.query_history as query_history
 
@@ -114,6 +115,12 @@ with dockercompose_tab:
         dockercompose = generators.generate_docker_compose(
             client, model, application, selected_misconfigurations
         )
+        for item in dockercompose:
+            if item["file_type"].lower() == "yaml":
+                # Try to imporove the docker-compose output using yamlfix.
+                fixed_code = run_yamlfix(item["file_content"])
+                item["file_content"] = fixed_code
+
         st.session_state["dockercompose_generated"] = True
         st.session_state["dockercompose_content"] = dockercompose
         query_history.save_query(

@@ -3,3 +3,4 @@ PyYAML==6.0.2
 Requests==2.32.3
 streamlit==1.40.0
 tqdm==4.67.0
+yamlfix==1.17.0
