@@ -57,9 +57,11 @@ def local_deploy_compose(docker_compose):
 
     code_container = st.container()
     st.button(
-        "Stop Local Deploy",
+        "🛑 Stop Local Deploy",
         on_click=stop_current_local_deploy,
         args=(process, tmpdir),
+        use_container_width=True,
+        type="secondary",
     )
     with code_container.empty():
         for line in iter(process.stdout.readline, ""):

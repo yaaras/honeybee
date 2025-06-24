@@ -12,3 +12,5 @@ misconfigurations.json
 .qhistory/
 .env
 __pycache__
+honeybee_submission/
+.DS_Store
