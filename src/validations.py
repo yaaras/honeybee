@@ -1,7 +1,3 @@
-import re
-import yaml
-import tempfile
-import subprocess
 from yamlfix import fix_code, model
 
 YAMLFIX_CONFIG = model.YamlfixConfig(

@@ -5,6 +5,7 @@ import time
 from src.settings import get_llm_settings, get_jina_ai_api_key
 from src.client_provider import get_llm_client
 from src.validations import run_yamlfix
+from src.trace_tools import add_tcpdump_service
 import src.generators as generators
 import src.query_history as query_history
 
@@ -203,7 +204,13 @@ with dockerfile_tab:
 
 # Docker Compose Tab
 with dockercompose_tab:
-    if application and st.button("Generate Docker Compose", use_container_width=True, type="primary"):
+    with_trace = st.toggle(
+        "With trace tools",
+        help="Choose to add trace services to the docker compose for example tcpdump",
+    )
+    if application and st.button(
+        "Generate Docker Compose", use_container_width=True, type="primary"
+    ):
         with st.spinner("Generating Docker Compose..."):
             if input_mode in (import_url, paste_input):
                 dockercompose = generators.generate_docker_compose_from_markdown(
@@ -217,6 +224,9 @@ with dockercompose_tab:
                 if item["file_type"].lower() == "yaml":
                     # Try to imporove the docker-compose output using yamlfix.
                     fixed_code = run_yamlfix(item["file_content"])
+                    if with_trace:
+                        # Add the tcpdump service
+                        fixed_code = add_tcpdump_service(fixed_code)
                     item["file_content"] = fixed_code
 
         st.session_state["dockercompose_generated"] = True
