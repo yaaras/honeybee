@@ -269,7 +269,12 @@ with dockercompose_tab:
             line_numbers=True,
             wrap_lines=True,
         )
-        st.button("Stop Local Deploy", disabled=True)
+        st.button(
+            "🛑 Stop Local Deploy",
+            use_container_width=True,
+            type="secondary",
+            disabled=True,
+        )
         st.session_state["deploy_process_output"] = None
 
 # Nuclei Tab
