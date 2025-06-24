@@ -247,7 +247,7 @@ with dockercompose_tab:
             else:
                 col2.caption(f"{item['file_name']}")
                 col2.markdown(item["file_content"])
-    if st.session_state.get("dockercompose_generated") and st.button("Deploy Locally"):
+    if st.session_state.get("dockercompose_generated") and st.button("Deploy Locally", use_container_width=True, type="primary"):
         files_json = st.session_state["dockercompose_content"]
         for item in files_json:
             if item.get("file_type").lower() == "yaml":
