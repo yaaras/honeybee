@@ -55,8 +55,8 @@ for category, apps_dict in misconfigurations_data.items():
         misconfigs_count += len(misconfigs)
 
 # Show metrics in the sidebar
-st.sidebar.markdown("---")
-st.sidebar.subheader("Metrics")
+st.sidebar.divider()
+st.sidebar.subheader("Catalog")
 s1, s2 = st.sidebar.columns(2)
 s1.metric("Apps", apps_count)
 s2.metric("Misconfigs", misconfigs_count)
