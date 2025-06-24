@@ -6,7 +6,7 @@ from src.settings import get_llm_settings, get_jina_ai_api_key
 from src.client_provider import get_llm_client
 from src.validations import run_yamlfix
 from src.trace_tools import add_tcpdump_service
-from src.local_deploy import local_deploy_compose
+from src.local_deploy import local_deploy_compose, check_docker_compose_installed
 import src.generators as generators
 import src.query_history as query_history
 
@@ -22,6 +22,11 @@ st.subheader("Misconfigured App Simulator & Detector")
 
 # Get LLM settings from the sidebar
 settings = get_llm_settings()
+
+docker_compose_supported = st.session_state.get(
+    "docker_compose_supported", check_docker_compose_installed()
+)
+st.session_state["docker_compose_supported"] = docker_compose_supported
 
 # Validate API credentials
 if settings["provider"] == "OpenAI" and not settings["api_key"]:
@@ -247,7 +252,12 @@ with dockercompose_tab:
             else:
                 col2.caption(f"{item['file_name']}")
                 col2.markdown(item["file_content"])
-    if st.session_state.get("dockercompose_generated") and st.button("Deploy Locally", use_container_width=True, type="primary"):
+    if st.session_state.get("dockercompose_generated") and st.button(
+        "Deploy Locally",
+        use_container_width=True,
+        type="primary",
+        disabled=not docker_compose_supported,
+    ):
         files_json = st.session_state["dockercompose_content"]
         for item in files_json:
             if item.get("file_type").lower() == "yaml":

@@ -8,6 +8,17 @@ from pathlib import Path
 from tempfile import mkdtemp
 
 
+def check_docker_compose_installed():
+    try:
+        process = subprocess.run(
+            ["docker", "compose", "ls"], stdout=subprocess.PIPE, check=False
+        )
+    except Exception:
+        return False
+    # Check normal output of docker compose to make sure it is properly installed.
+    return process.returncode == 0 and process.stdout.startswith(b"NAME")
+
+
 def stop_current_local_deploy(process, tmpdir):
     process.send_signal(signal.SIGINT)
     full_output = st.session_state["deploy_process_output"]
