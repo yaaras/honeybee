@@ -6,6 +6,7 @@ from src.settings import get_llm_settings, get_jina_ai_api_key
 from src.client_provider import get_llm_client
 from src.validations import run_yamlfix
 from src.trace_tools import add_tcpdump_service
+from src.local_deploy import local_deploy_compose
 import src.generators as generators
 import src.query_history as query_history
 
@@ -246,6 +247,20 @@ with dockercompose_tab:
             else:
                 col2.caption(f"{item['file_name']}")
                 col2.markdown(item["file_content"])
+    if st.session_state.get("dockercompose_generated") and st.button("Deploy Locally"):
+        files_json = st.session_state["dockercompose_content"]
+        for item in files_json:
+            if item.get("file_type").lower() == "yaml":
+                local_deploy_compose(item["file_content"])
+    if final_output := st.session_state.get("deploy_process_output"):
+        st.code(
+            "\n".join(final_output),
+            height=400,
+            line_numbers=True,
+            wrap_lines=True,
+        )
+        st.button("Stop Local Deploy", disabled=True)
+        st.session_state["deploy_process_output"] = None
 
 # Nuclei Tab
 with nuclei_tab:

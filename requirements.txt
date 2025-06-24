@@ -1,7 +1,7 @@
 openai==1.66.2
 PyYAML==6.0.2
 Requests==2.32.3
-streamlit==1.40.0
+streamlit==1.44.1
 tqdm==4.67.0
 yamlfix==1.17.0
 oyaml==1.0
