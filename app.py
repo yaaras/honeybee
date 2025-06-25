@@ -9,6 +9,7 @@ from src.trace_tools import add_tcpdump_service
 from src.local_deploy import local_deploy_compose, check_docker_compose_installed
 import src.generators as generators
 import src.query_history as query_history
+from tabs import dockerfile_tab, dockercompose_tab, nuclei_tab
 
 # Set up Streamlit page
 st.set_page_config(
@@ -174,128 +175,160 @@ if not prompt_source.strip():
 # TABS
 
 # Create tabs for different generators
-dockercompose_tab, dockerfile_tab, nuclei_tab, history_tab = st.tabs(
-    ["Docker Compose", "Dockerfile", "Nuclei", "History"]
+dockercompose_tab_obj, dockerfile_tab_obj, nuclei_tab_obj = st.tabs(
+    ["Docker Compose", "Dockerfile", "Nuclei"]
 )
 
-# Dockerfile Tab
-with dockerfile_tab:
-    if application and st.button("Generate Dockerfile", use_container_width=True, type="primary"):
-        with st.spinner("Generating Dockerfile..."):
-            if input_mode in (import_url, paste_input):
-                dockerfile = generators.generate_dockerfile_from_markdown(
-                    client, model, input_content
-                )
-            else:
-                dockerfile = generators.generate_dockerfile(
-                    client, model, application, selected_misconfigurations
-                )
-        st.session_state["dockerfile_generated"] = True
-        st.session_state["dockerfile_content"] = dockerfile
-        query_history.save_query(
-            "Dockerfile", [application, selected_misconfigurations], dockerfile
-        )
-        st.success("Dockerfile generated successfully!")
 
-    if st.session_state.get("dockerfile_generated"):
-        files_json = st.session_state["dockerfile_content"]
-        col1, col2 = st.columns(2)
-        for item in files_json:
-            if item.get("file_type") != "markdown":
-                col1.caption(f"{item['file_path']}/{item['file_name']}")
-                col1.code(item["file_content"], language="docker")
-            else:
-                col2.caption(f"{item['file_name']}")
-                col2.markdown(item["file_content"])
-
-# Docker Compose Tab
-with dockercompose_tab:
-    with_trace = st.toggle(
-        "With trace tools",
-        help="Choose to add trace services to the docker compose for example tcpdump",
+with dockercompose_tab_obj:
+    dockercompose_tab.render(
+        application,
+        input_mode,
+        input_content,
+        selected_misconfigurations,
+        client,
+        model,
+        docker_compose_supported
     )
-    if application and st.button(
-        "Generate Docker Compose", use_container_width=True, type="primary"
-    ):
-        with st.spinner("Generating Docker Compose..."):
-            if input_mode in (import_url, paste_input):
-                dockercompose = generators.generate_docker_compose_from_markdown(
-                    client, model, input_content
-                )
-            else:
-                dockercompose = generators.generate_docker_compose(
-                    client, model, application, selected_misconfigurations
-                )
-            for item in dockercompose:
-                if item["file_type"].lower() == "yaml":
-                    # Try to imporove the docker-compose output using yamlfix.
-                    fixed_code = run_yamlfix(item["file_content"])
-                    if with_trace:
-                        # Add the tcpdump service
-                        fixed_code = add_tcpdump_service(fixed_code)
-                    item["file_content"] = fixed_code
 
-        st.session_state["dockercompose_generated"] = True
-        st.session_state["dockercompose_content"] = dockercompose
-        query_history.save_query(
-            "Docker Compose", [application, selected_misconfigurations], dockercompose
-        )
-        st.success("Docker Compose generated successfully!")
+with dockerfile_tab_obj:
+    dockerfile_tab.render(
+        application,
+        input_mode,
+        input_content,
+        selected_misconfigurations,
+        client,
+        model
+    )
 
-    if st.session_state.get("dockercompose_generated"):
-        files_json = st.session_state["dockercompose_content"]
-        col1, col2 = st.columns(2)
-        for item in files_json:
-            if item.get("file_type") != "markdown":
-                col1.caption(f"{item['file_path']}/{item['file_name']}")
-                col1.code(item["file_content"], language="yaml")
-            else:
-                col2.caption(f"{item['file_name']}")
-                col2.markdown(item["file_content"])
-    if st.session_state.get("dockercompose_generated") and st.button(
-        "Deploy Locally",
-        use_container_width=True,
-        type="primary",
-        disabled=not docker_compose_supported,
-    ):
-        files_json = st.session_state["dockercompose_content"]
-        for item in files_json:
-            if item.get("file_type").lower() == "yaml":
-                local_deploy_compose(item["file_content"])
-    if final_output := st.session_state.get("deploy_process_output"):
-        st.code(
-            "\n".join(final_output),
-            height=400,
-            line_numbers=True,
-            wrap_lines=True,
-        )
-        st.button(
-            "🛑 Stop Local Deploy",
-            use_container_width=True,
-            type="secondary",
-            disabled=True,
-        )
-        st.session_state["deploy_process_output"] = None
+with nuclei_tab_obj:
+    nuclei_tab.render(
+        application,
+        input_mode,
+        input_content,
+        selected_misconfigurations,
+        client,
+        model
+    )
 
-# Nuclei Tab
-with nuclei_tab:
-    if application and st.button("Generate Nuclei", use_container_width=True, type="primary"):
-        with st.spinner("Generating Nuclei..."):
-            if input_mode in (import_url, paste_input):
-                nuclei = generators.generate_nuclei_from_markdown(
-                    client, model, input_content
-                )
-            else:
-                nuclei = generators.generate_nuclei(
-                    client, model, application, selected_misconfigurations
-                )
-        st.session_state["nuclei_generated"] = True
-        st.session_state["nuclei_content"] = nuclei
-        query_history.save_query(
-            "Nuclei", [application, selected_misconfigurations], nuclei
-        )
-        st.success("Nuclei generated successfully!")
-
-    if st.session_state.get("nuclei_generated"):
-        st.write(st.session_state["nuclei_content"])
-
+# # Dockerfile Tab
+# with dockerfile_tab:
+#     if application and st.button("Generate Dockerfile", use_container_width=True, type="primary"):
+#         with st.spinner("Generating Dockerfile..."):
+#             if input_mode in (import_url, paste_input):
+#                 dockerfile = generators.generate_dockerfile_from_markdown(
+#                     client, model, input_content
+#                 )
+#             else:
+#                 dockerfile = generators.generate_dockerfile(
+#                     client, model, application, selected_misconfigurations
+#                 )
+#         st.session_state["dockerfile_generated"] = True
+#         st.session_state["dockerfile_content"] = dockerfile
+#         query_history.save_query(
+#             "Dockerfile", [application, selected_misconfigurations], dockerfile
+#         )
+#         st.success("Dockerfile generated successfully!")
+#
+#     if st.session_state.get("dockerfile_generated"):
+#         files_json = st.session_state["dockerfile_content"]
+#         col1, col2 = st.columns(2)
+#         for item in files_json:
+#             if item.get("file_type") != "markdown":
+#                 col1.caption(f"{item['file_path']}/{item['file_name']}")
+#                 col1.code(item["file_content"], language="docker")
+#             else:
+#                 col2.caption(f"{item['file_name']}")
+#                 col2.markdown(item["file_content"])
+#
+# # Docker Compose Tab
+# with dockercompose_tab:
+#     with_trace = st.toggle(
+#         "With trace tools",
+#         help="Choose to add trace services to the docker compose for example tcpdump",
+#     )
+#     if application and st.button(
+#         "Generate Docker Compose", use_container_width=True, type="primary"
+#     ):
+#         with st.spinner("Generating Docker Compose..."):
+#             if input_mode in (import_url, paste_input):
+#                 dockercompose = generators.generate_docker_compose_from_markdown(
+#                     client, model, input_content
+#                 )
+#             else:
+#                 dockercompose = generators.generate_docker_compose(
+#                     client, model, application, selected_misconfigurations
+#                 )
+#             for item in dockercompose:
+#                 if item["file_type"].lower() == "yaml":
+#                     # Try to imporove the docker-compose output using yamlfix.
+#                     fixed_code = run_yamlfix(item["file_content"])
+#                     if with_trace:
+#                         # Add the tcpdump service
+#                         fixed_code = add_tcpdump_service(fixed_code)
+#                     item["file_content"] = fixed_code
+#
+#         st.session_state["dockercompose_generated"] = True
+#         st.session_state["dockercompose_content"] = dockercompose
+#         query_history.save_query(
+#             "Docker Compose", [application, selected_misconfigurations], dockercompose
+#         )
+#         st.success("Docker Compose generated successfully!")
+#
+#     if st.session_state.get("dockercompose_generated"):
+#         files_json = st.session_state["dockercompose_content"]
+#         col1, col2 = st.columns(2)
+#         for item in files_json:
+#             if item.get("file_type") != "markdown":
+#                 col1.caption(f"{item['file_path']}/{item['file_name']}")
+#                 col1.code(item["file_content"], language="yaml")
+#             else:
+#                 col2.caption(f"{item['file_name']}")
+#                 col2.markdown(item["file_content"])
+#     if st.session_state.get("dockercompose_generated") and st.button(
+#         "Deploy Locally",
+#         use_container_width=True,
+#         type="primary",
+#         disabled=not docker_compose_supported,
+#     ):
+#         files_json = st.session_state["dockercompose_content"]
+#         for item in files_json:
+#             if item.get("file_type").lower() == "yaml":
+#                 local_deploy_compose(item["file_content"])
+#     if final_output := st.session_state.get("deploy_process_output"):
+#         st.code(
+#             "\n".join(final_output),
+#             height=400,
+#             line_numbers=True,
+#             wrap_lines=True,
+#         )
+#         st.button(
+#             "🛑 Stop Local Deploy",
+#             use_container_width=True,
+#             type="secondary",
+#             disabled=True,
+#         )
+#         st.session_state["deploy_process_output"] = None
+#
+# # Nuclei Tab
+# with nuclei_tab:
+#     if application and st.button("Generate Nuclei", use_container_width=True, type="primary"):
+#         with st.spinner("Generating Nuclei..."):
+#             if input_mode in (import_url, paste_input):
+#                 nuclei = generators.generate_nuclei_from_markdown(
+#                     client, model, input_content
+#                 )
+#             else:
+#                 nuclei = generators.generate_nuclei(
+#                     client, model, application, selected_misconfigurations
+#                 )
+#         st.session_state["nuclei_generated"] = True
+#         st.session_state["nuclei_content"] = nuclei
+#         query_history.save_query(
+#             "Nuclei", [application, selected_misconfigurations], nuclei
+#         )
+#         st.success("Nuclei generated successfully!")
+#
+#     if st.session_state.get("nuclei_generated"):
+#         st.write(st.session_state["nuclei_content"])
+#
