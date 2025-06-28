@@ -2,6 +2,8 @@ import requests
 import streamlit as st
 import json
 import time
+from pathlib import Path
+
 from src.settings import get_llm_settings, get_jina_ai_api_key
 from src.client_provider import get_llm_client
 from src.validations import run_yamlfix
@@ -10,6 +12,7 @@ from src.local_deploy import local_deploy_compose, check_docker_compose_installe
 import src.generators as generators
 import src.query_history as query_history
 from tabs import dockerfile_tab, dockercompose_tab, nuclei_tab
+
 
 # Set up Streamlit page
 st.set_page_config(
@@ -47,8 +50,10 @@ model = settings["model"]
 jina_ai_api = get_jina_ai_api_key()
 
 # Load misconfigurations data
-with open("misconfigurations_catalog.json") as f:
-    misconfigurations_data = json.load(f)
+
+misconfigurations_data = json.loads(
+    Path(__file__).parent.joinpath("misconfigurations_catalog.json").read_text()
+)
 
 
 # Calculate metrics from the JSON data
