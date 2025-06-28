@@ -87,7 +87,7 @@ input_content = None
 if input_mode == browse_catalog:
     m1, m2, m3 = st.columns([1, 1, 2])
     categories = list(misconfigurations_data.keys())
-    category  = m1.selectbox("Choose a category:", categories)
+    category = m1.selectbox("Choose a category:", categories)
     if category:
         applications = list(misconfigurations_data[category].keys())
         application = m2.selectbox("Choose an application:", applications)
@@ -101,7 +101,7 @@ if input_mode == browse_catalog:
 elif input_mode == custom_input:
     m1, m2 = st.columns([1, 3])
     application = m1.text_input("Enter application name:")
-    misconfig    = m2.text_input("Enter Misconfiguration:")
+    misconfig = m2.text_input("Enter Misconfiguration:")
     selected_misconfigurations = [misconfig.strip()] if misconfig.strip() else []
 
 # load from URL
@@ -109,7 +109,7 @@ elif input_mode == import_url:
     url = st.text_input(
         "Enter URL to scrape and convert to Markdown:",
         value=st.session_state.get("url", ""),
-        help="Hit Enter or click away to load."
+        help="Hit Enter or click away to load.",
     )
     st.session_state.url = url
 
@@ -122,8 +122,7 @@ elif input_mode == import_url:
             # call Jina-AI proxy
             jina_ai_url = f"https://r.jina.ai/{url}"
             resp = requests.get(
-                jina_ai_url,
-                headers={"Authorization": f"Bearer {jina_ai_api}"}
+                jina_ai_url, headers={"Authorization": f"Bearer {jina_ai_api}"}
             )
             if resp.status_code == 200:
                 input_content = resp.text
@@ -140,7 +139,7 @@ else:
     application = st.text_input(
         "Enter application name:",
         value=st.session_state.get("application", ""),
-        help="Enter the name of the application you want to simulate."
+        help="Enter the name of the application you want to simulate.",
     )
     st.session_state.application = application
 
@@ -148,7 +147,7 @@ else:
         "Enter custom text:",
         value=st.session_state.get("input_content", ""),
         height=200,
-        help="Enter custom text to generate configurations."
+        help="Enter custom text to generate configurations.",
     )
     st.session_state.input_content = input_content
     if input_content:
@@ -157,7 +156,9 @@ else:
 
 if input_mode == import_url and input_content:
     prompt_source = input_content
-    application = generators.extract_application_from_markdown(client, model, input_content)
+    application = generators.extract_application_from_markdown(
+        client, model, input_content
+    )
 elif input_mode == paste_input and input_content:
     prompt_source = input_content
     application = st.session_state.get("application", "")
@@ -188,7 +189,7 @@ with dockercompose_tab_obj:
         selected_misconfigurations,
         client,
         model,
-        docker_compose_supported
+        docker_compose_supported,
     )
 
 # dockerfile tab
@@ -199,7 +200,7 @@ with dockerfile_tab_obj:
         input_content,
         selected_misconfigurations,
         client,
-        model
+        model,
     )
 
 # nuclei tab
@@ -210,5 +211,5 @@ with nuclei_tab_obj:
         input_content,
         selected_misconfigurations,
         client,
-        model
+        model,
     )

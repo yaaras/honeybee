@@ -22,6 +22,8 @@ def check_docker_compose_installed():
 def stop_current_local_deploy(process, tmpdir):
     process.send_signal(signal.SIGINT)
     full_output = st.session_state.get("deploy_process_output", [])
+    if full_output is None:
+        full_output = []
     # Get the final lines of output...
     for line in iter(process.stdout.readline, ""):
         if not line:
@@ -89,4 +91,4 @@ def local_deploy_compose(docker_compose):
             st.session_state["deploy_process_output"] = full_output
 
     # If we leave this loop it means the local deploy failed or existed.
-    st.session_state["deploy_process_output"] = None
+    st.session_state.pop("deploy_process_output")

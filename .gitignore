@@ -9,6 +9,8 @@ out/Kibana/
 generate_misconfig.py
 landscape.yml
 misconfigurations.json
+*.egg-info
+build/
 .qhistory/
 .env
 __pycache__
