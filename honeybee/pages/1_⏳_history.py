@@ -9,11 +9,11 @@ from src.query_history import load_history
 # Page configuration
 st.set_page_config(
     page_title="History",
-    page_icon=":bookmark_tabs:",
+    page_icon=":bee:",
     layout="wide",
 )
 
-st.title("🕘 HoneyBee – Query History")
+st.title(":hourglass_flowing_sand: Query History")
 
 HISTORY_PATH = Path(".qhistory")
 

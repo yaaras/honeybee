@@ -1,7 +1,12 @@
-openai==1.66.2
 PyYAML==6.0.2
 Requests==2.32.3
-streamlit==1.44.1
+streamlit==1.46.0
+yamllint==1.37.0
+openai==1.66.2
 tqdm==4.67.0
 yamlfix==1.17.0
+PyJWT>=2.8.0
+scapy==2.6.1
+boto3==1.34.26
 oyaml==1.0
+
