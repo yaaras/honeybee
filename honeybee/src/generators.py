@@ -1,5 +1,8 @@
 import json
 import re
+from pathlib import Path
+
+PROMPTS_PATH = Path(__file__).parent.parent.joinpath("prompts")
 
 
 def generate_from_prompt(client, model, prompt_file, user_prompt):
@@ -33,7 +36,7 @@ def generate_dockerfile(client, model, application, misconfigurations):
         f"{', '.join(misconfigurations)}. Provide the output as a JSON object with 'file_name', 'file_path', and 'file_content' keys for each file."
     )
     return generate_from_prompt(
-        client, model, "prompts/generate_dockerfile.md", user_prompt
+        client, model, PROMPTS_PATH.joinpath("generate_dockerfile.md"), user_prompt
     )
 
 
@@ -43,7 +46,7 @@ def generate_docker_compose(client, model, application, misconfigurations):
         f"{', '.join(misconfigurations)}. Provide the output as a JSON object with 'file_name', 'file_path', and 'file_content' keys for each file."
     )
     return generate_from_prompt(
-        client, model, "prompts/generate_dockercompose.md", user_prompt
+        client, model, PROMPTS_PATH.joinpath("generate_dockercompose.md"), user_prompt
     )
 
 
@@ -54,7 +57,10 @@ def generate_nuclei(client, model, application, misconfigurations):
     )
     chat_completion = client.chat.completions.create(
         messages=[
-            {"role": "system", "content": open("prompts/write_nuclei_rule.md").read()},
+            {
+                "role": "system",
+                "content": PROMPTS_PATH.joinpath("write_nuclei_rule.md").read_text(),
+            },
             {"role": "user", "content": user_prompt},
         ],
         model=model,
@@ -72,7 +78,7 @@ def generate_dockerfile_from_markdown(client, model, markdown_content):
         "Provide the output as a JSON object with 'file_name', 'file_path', and 'file_content' keys for each file."
     )
     return generate_from_prompt(
-        client, model, "prompts/generate_dockerfile.md", user_prompt
+        client, model, PROMPTS_PATH.joinpath("generate_dockerfile.md"), user_prompt
     )
 
 
@@ -86,7 +92,7 @@ def generate_docker_compose_from_markdown(client, model, markdown_content):
         "Provide the output as a JSON object with 'file_name', 'file_path', and 'file_content' keys for each file."
     )
     return generate_from_prompt(
-        client, model, "prompts/generate_dockercompose.md", user_prompt
+        client, model, PROMPTS_PATH.joinpath("generate_dockercompose.md"), user_prompt
     )
 
 
@@ -101,12 +107,15 @@ def generate_nuclei_from_markdown(client, model, markdown_content):
     )
     chat_completion = client.chat.completions.create(
         messages=[
-            {"role": "system", "content": open("prompts/write_nuclei_rule.md").read()},
+            {
+                "role": "system",
+                "content": PROMPTS_PATH.joinpath("write_nuclei_rule.md").read_text(),
+            },
             {"role": "user", "content": user_prompt},
         ],
         model=model,
     )
-    return chat_completion.choices[0].message.content\
+    return chat_completion.choices[0].message.content
 
 
 def extract_application_from_markdown(client, model, markdown_content):
@@ -119,6 +128,6 @@ def extract_application_from_markdown(client, model, markdown_content):
         "Return the application name as a string."
     )
     response = generate_from_prompt(
-        client, model, "prompts/extract_application.md", user_prompt
+        client, model, PROMPTS_PATH.joinpath("extract_application.md"), user_prompt
     )
     return response.get("application_name", "")

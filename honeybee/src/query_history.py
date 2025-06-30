@@ -5,7 +5,7 @@ import streamlit as st
 from pathlib import Path
 
 
-HISTORY_PATH = Path(".qhistory")
+HISTORY_PATH = Path(__file__).parent.joinpath(".qhistory")
 
 # check if the history directory exists, if not create it
 if not HISTORY_PATH.exists():
