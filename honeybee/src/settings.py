@@ -3,7 +3,7 @@ import streamlit as st
 
 
 def get_llm_settings():
-    st.sidebar.header("Settings ⚙️")
+    st.sidebar.header("⚙️ Settings️")
 
     # Use session state to set default provider; default to "OpenAI" if not set
     default_provider = st.session_state.get("provider", "OpenAI")

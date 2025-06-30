@@ -17,7 +17,6 @@ from tabs import dockerfile_tab, dockercompose_tab, nuclei_tab
 # Set up Streamlit page
 st.set_page_config(
     page_title="HoneyBee",
-    page_icon=":bee:",
     layout="wide",
     initial_sidebar_state="expanded",
 )
