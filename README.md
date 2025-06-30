@@ -13,7 +13,7 @@ With the help of LLMs, HoneyBee generates:
 - HoneyBee uses LLMs to generate the required files and instructions to use them.
 
 ![HoneyBee](
-images/Honeybee_screenshot.png)
+images/img.png)
 
 ## Key Features
 
