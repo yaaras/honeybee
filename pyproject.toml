@@ -3,7 +3,7 @@ requires = ["setuptools >= 77.0.3", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "honeybee"
+name = "pyhoneybee"
 authors = [
   { name="Yaara Shriki", email="yaara.shriki@wiz.io" },
 ]
