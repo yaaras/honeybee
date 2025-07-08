@@ -25,40 +25,54 @@ images/img.png)
 - **Detection Template Generator**:
   - Generate **Nuclei templates** to detect the created misconfiguration.
 
+- **One-click test deployment**:
+  - Deploy generated **docker-compose** files with one click and without leaving the browser.
+
 ## Getting Started
 
 ### Prerequisites
 
 - Python 3.10 or above
-- OpenAI API key 
+- OpenAI API key
 
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/yaaras/honeybee.git
    cd honeybee
     ```
-2.	Install the required dependencies:
+
+2. Install using pip:
+
       ```bash
-      pip install -r requirements.txt
+      pip install -e .
       ```
 
 3. Set up your OpenAI API key:
 
     For OpenAI:
+
     ```bash
     export OPENAI_API_KEY=your_openai_api_key
     ```
-    
+
     For Azure OpenAI:
+
     ```bash
     export AZURE_OPENAI_API_KEY=your_azure_api_key
     export AZURE_OPENAI_ENDPOINT=your_azure_endpoint
     ```
 
+4. Setup docker compose (Optional):
+
+    To enable the use of the local deployment feature simply [Install Docker Compose](https://docs.docker.com/compose/install/).
+
+
 ### Usage
+Simply run the honeybee command
    ```bash
-    streamlit run app.py
+    honeybee
    ```
 Open your browser and navigate to the URL provided by Streamlit (typically http://localhost:8501).
