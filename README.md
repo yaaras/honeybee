@@ -35,7 +35,21 @@ images/img.png)
 - Python 3.10 or above
 - OpenAI API key
 
-### Installation
+### ⚡ Quick Setup ⚡
+
+1. Run these commands:
+
+    ```bash
+    # Installs the latest release
+    pip install pyhoneybee
+    # Runs the honeybee server
+    honeybee
+    ```
+
+Open your browser and navigate to the URL provided by Streamlit (typically http://localhost:8501).
+
+
+### Developer Installation
 
 1. Clone the repository:
 
