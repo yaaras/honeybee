@@ -34,6 +34,9 @@ images/img.png)
 
 - Python 3.10 or above
 - OpenAI API key
+- Optional features
+  - Docker compose
+  - [Jina API token](https://jina.ai/)
 
 ### ⚡ Quick Setup ⚡
 
@@ -83,10 +86,22 @@ Open your browser and navigate to the URL provided by Streamlit (typically http:
 
     To enable the use of the local deployment feature simply [Install Docker Compose](https://docs.docker.com/compose/install/).
 
+5. Setup Jina API Token (Optional):
+
+    To enable automatic extraction of misconfigurations from blogs or articles you need to provide a [Jina API token](https://jina.ai/)
+
+    You can then set the token in the settings page or add it to your environment:
+
+    ```bash
+    export JINA_API_TOKEN=your_jina_api_key
+    ```
 
 ### Usage
+
 Simply run the honeybee command
+
    ```bash
     honeybee
    ```
+
 Open your browser and navigate to the URL provided by Streamlit (typically http://localhost:8501).
