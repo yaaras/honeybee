@@ -105,3 +105,69 @@ Simply run the honeybee command
    ```
 
 Open your browser and navigate to the URL provided by Streamlit (typically http://localhost:8501).
+
+## Examples
+
+### 1. PostgreSQL - No Password Set
+
+**Input:**
+Misconfiguration: PostgreSQL with no password set
+
+**Output:**
+
+```yaml
+services:
+  db:
+    container_name: 'db'
+    environment:
+      POSTGRES_DB: 'mydatabase'
+      POSTGRES_PASSWORD:
+      POSTGRES_USER: 'admin'
+    image: 'postgres:13'
+    logging:
+      driver: 'json-file'
+      options:
+        max-file: '3'
+        max-size: '10m'
+    ports:
+      - '5432:5432'
+    restart: 'always'
+    volumes:
+      - 'db_data:/var/lib/postgresql/data'
+version: '3.8'
+volumes:
+  db_data:
+```
+
+### 2. Grafana - Multiple Misconfigurations
+
+**Input:**
+Misconfigurations:
+
+* Weak Admin Password
+* Anonymous Access Enabled
+* User Sign-Up Allowed
+* Exposed Grafana Port
+
+**Output:**
+
+```yaml
+services:
+  grafana:
+    container_name: 'grafana'
+    environment:
+      - 'GF_SECURITY_ADMIN_USER=admin'
+      - 'GF_SECURITY_ADMIN_PASSWORD=admin'
+      - 'GF_AUTH_ANONYMOUS_ENABLED=true'
+      - 'GF_USERS_ALLOW_SIGN_UP=true'
+    image: 'grafana/grafana:8.2.5'
+    ports:
+      - '3000:3000'
+    volumes:
+      - 'grafana_data:/var/lib/grafana'
+version: '3.8'
+volumes:
+  grafana_data:
+    driver: 'local'
+```
+
